@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Zap, 
   TrendingUp, 
@@ -99,7 +99,7 @@ export function TradingDashboard() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-6">
             <div className="hidden sm:flex items-center space-x-4 bg-trading-dark px-4 py-2 rounded-lg border border-trading-border">
               <div className="text-center">
@@ -114,7 +114,7 @@ export function TradingDashboard() {
                 </div>
               </div>
             </div>
-            
+
             <Button 
               onClick={connectWallet} 
               disabled={walletLoading}
@@ -188,7 +188,7 @@ export function TradingDashboard() {
               </button>
             </nav>
           </div>
-          
+
           {/* Flash Loan Provider Status */}
           <div className="p-4 mt-6">
             <h3 className="text-sm font-semibold text-gray-400 mb-3">Flash Loan Providers</h3>
@@ -612,7 +612,7 @@ export function TradingDashboard() {
                   {/* Position Limits */}
                   <div className="space-y-4">
                     <h3 className="text-sm font-semibold text-gray-300">Position Limits</h3>
-                    
+
                     <div className="space-y-3">
                       <div>
                         <Label className="text-xs text-gray-400">Max Position Size</Label>
@@ -667,7 +667,7 @@ export function TradingDashboard() {
                   {/* Execution Controls */}
                   <div className="space-y-4">
                     <h3 className="text-sm font-semibold text-gray-300">Execution Controls</h3>
-                    
+
                     <div className="space-y-3">
                       <div>
                         <Label className="text-xs text-gray-400">Min Profit Threshold (%)</Label>
@@ -706,7 +706,7 @@ export function TradingDashboard() {
                   {/* Monitor & Alerts */}
                   <div className="space-y-4">
                     <h3 className="text-sm font-semibold text-gray-300">Monitoring & Alerts</h3>
-                    
+
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-3 bg-trading-dark rounded border border-trading-border">
                         <div>
@@ -763,6 +763,38 @@ export function TradingDashboard() {
           <Play className="text-xl" />
         </Button>
       </div>
+      {/* Auto-execute profitable opportunities when balance >= $100 USD */}
+      {/* Auto-execute profitable opportunities when balance >= $100 USD */}
+      {/* Auto-execute profitable opportunities when balance >= $100 USD */}
     </div>
   );
 }
+
+import { useEffect } from 'react';
+import { useArbitrage } from '@/hooks/useArbitrage';
+import { useWallet } from '@/hooks/useWallet';
+import { arbitrageService } from '@/services/arbitrageService';
+
+export function AutoTradeController() {
+  const { wallet } = useWallet();
+  const { opportunities, isExecuting, autoExecute, executeArbitrage } = useArbitrage();
+
+  // Auto-execute profitable opportunities when balance >= $100 USD
+  useEffect(() => {
+    const usdBalance = wallet.balance * 3000; // Assume ETH price ~$3000 for USD conversion
+    const hasMinimumBalance = usdBalance >= 100;
+
+    if (autoExecute && hasMinimumBalance && opportunities.length > 0 && !isExecuting) {
+      const profitableOps = arbitrageService.filterProfitableOpportunities(opportunities, 50);
+      const sortedOps = arbitrageService.sortByProfitability(profitableOps);
+
+      if (sortedOps.length > 0) {
+        executeArbitrage(sortedOps[0].id);
+      }
+    }
+  }, [autoExecute, opportunities, isExecuting, wallet.balance]);
+
+  return null; // This component doesn't render anything
+}
+
+export default TradingDashboard;
