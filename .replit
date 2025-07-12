@@ -1,2 +1,12 @@
-{}
+modules = ["nodejs-20"]
+
+[nix]
+packages = ["nano"]
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
 run = "npm run dev"
+
+production deploy = "npm start"
