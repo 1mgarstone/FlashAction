@@ -86,11 +86,15 @@ args = "cd ArbitrageEngine-main"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
+args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
 args = "node scripts/fixSystem.js"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm install"
+args = "npm run setup"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

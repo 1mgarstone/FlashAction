@@ -3,17 +3,18 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
     "start": "node server/index.js",
-    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
     "build": "npm run build:client && npm run build:server",
-    "build:client": "cd client && npm run build",
-    "build:server": "tsc server/index.ts --outDir dist",
-    "server:dev": "tsx watch server/index.ts",
-    "client:dev": "cd client && npm run dev",
-    "deploy": "npm run build && npm start",
-    "trade:start": "node scripts/setupRealTrading.js",
-    "check": "node scripts/checkSystem.js",
-    "maxgain": "node scripts/maxGainOptimizer.js"
+    "build:client": "cd client && npm install && npm run build",
+    "build:server": "tsc server/index.ts --outDir dist --target es2020 --module commonjs --esModuleInterop true --allowSyntheticDefaultImports true --resolveJsonModule true",
+    "server": "ts-node server/index.ts",
+    "client": "cd client && npm run dev",
+    "audit": "node scripts/auditAndDebug.js",
+    "fix": "npm run audit && npm install",
+    "health": "node scripts/healthCheck.js",
+    "maxgain": "node scripts/maxGainOptimizer.js",
+    "setup": "npm install && cd client && npm install"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -88,7 +89,11 @@
     "concurrently": "^8.2.2",
     "web3": "^4.11.1",
     "bignumber.js": "^9.1.2",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0",
+    "@uniswap/v3-sdk": "^3.10.0",
+    "@uniswap/sdk-core": "^4.2.0"
   },
   "devDependencies": {
     "@replit/vite-plugin-cartographer": "^0.2.7",
@@ -111,7 +116,6 @@
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.3",
-    "typescript": "5.6.3",
     "vite": "^6.3.5",
     "@types/cors": "^2.8.17",
     "@types/ws": "^8.5.11",
