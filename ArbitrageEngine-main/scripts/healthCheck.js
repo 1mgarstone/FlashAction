@@ -1,99 +1,78 @@
-
 #!/usr/bin/env node
 
-import fs from 'fs';
+import { existsSync } from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-class HealthMonitor {
-  async checkSystemHealth() {
-    console.log('🏥 RUNNING SYSTEM HEALTH CHECK');
-    console.log('================================');
-
-    const checks = {
-      nodeJS: await this.checkNodeJS(),
-      dependencies: await this.checkDependencies(),
-      environment: await this.checkEnvironment(),
-      ports: await this.checkPorts(),
-      diskSpace: await this.checkDiskSpace(),
-      memory: await this.checkMemory()
-    };
-
-    const healthScore = Object.values(checks).filter(Boolean).length;
-    const totalChecks = Object.keys(checks).length;
-    const healthPercentage = (healthScore / totalChecks) * 100;
-
-    console.log('\n📊 HEALTH SUMMARY');
-    console.log('=================');
-    console.log(`Overall Health: ${healthPercentage.toFixed(1)}% (${healthScore}/${totalChecks})`);
-    
-    Object.entries(checks).forEach(([check, status]) => {
-      console.log(`${status ? '✅' : '❌'} ${check}: ${status ? 'HEALTHY' : 'FAILED'}`);
-    });
-
-    if (healthPercentage < 70) {
-      console.log('\n⚠️  SYSTEM NEEDS ATTENTION!');
-      console.log('Run: npm run fix');
-    } else if (healthPercentage === 100) {
-      console.log('\n🎉 SYSTEM IS FULLY HEALTHY!');
-    }
-
-    return { healthPercentage, checks };
+class HealthChecker {
+  constructor() {
+    this.checks = [];
   }
 
-  async checkNodeJS() {
-    try {
-      await execAsync('node --version');
-      await execAsync('npm --version');
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  async checkDependencies() {
-    return fs.existsSync('node_modules') && fs.existsSync('package.json');
+  log(status, message) {
+    const symbol = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⚠️';
+    console.log(`${symbol} ${message}`);
+    this.checks.push({ status, message });
   }
 
   async checkEnvironment() {
-    return fs.existsSync('.env');
-  }
+    console.log('🔍 SYSTEM HEALTH CHECK');
+    console.log('===================');
 
-  async checkPorts() {
+    // Check Node.js
     try {
-      const { stdout } = await execAsync('netstat -tuln 2>/dev/null || ss -tuln 2>/dev/null || echo "no-netstat"');
-      return !stdout.includes(':5000') || stdout.includes('no-netstat');
-    } catch {
-      return true; // Assume healthy if can't check
+      const { stdout } = await execAsync('node --version');
+      this.log('pass', `Node.js version: ${stdout.trim()}`);
+    } catch (error) {
+      this.log('fail', 'Node.js not found');
     }
-  }
 
-  async checkDiskSpace() {
+    // Check npm
     try {
-      const { stdout } = await execAsync('df -h . 2>/dev/null || echo "90% available"');
-      const usage = stdout.match(/(\d+)%/);
-      return usage ? parseInt(usage[1]) < 90 : true;
-    } catch {
-      return true;
+      const { stdout } = await execAsync('npm --version');
+      this.log('pass', `npm version: ${stdout.trim()}`);
+    } catch (error) {
+      this.log('fail', 'npm not found');
     }
-  }
 
-  async checkMemory() {
+    // Check .env file
+    if (existsSync('.env')) {
+      this.log('pass', '.env file exists');
+    } else {
+      this.log('fail', '.env file missing');
+    }
+
+    // Check package.json
+    if (existsSync('package.json')) {
+      this.log('pass', 'package.json exists');
+    } else {
+      this.log('fail', 'package.json missing');
+    }
+
+    // Check dependencies
     try {
-      const { stdout } = await execAsync('free -m 2>/dev/null || echo "Mem: 1000 500"');
-      const memInfo = stdout.match(/Mem:\s+(\d+)\s+(\d+)/);
-      if (memInfo) {
-        const [, total, used] = memInfo;
-        return (used / total) < 0.9;
-      }
-      return true;
-    } catch {
-      return true;
+      await execAsync('npm list --depth=0');
+      this.log('pass', 'Dependencies installed');
+    } catch (error) {
+      this.log('warn', 'Some dependencies may be missing');
+    }
+
+    console.log('\n📊 HEALTH SUMMARY');
+    console.log('================');
+    const passed = this.checks.filter(c => c.status === 'pass').length;
+    const failed = this.checks.filter(c => c.status === 'fail').length;
+    console.log(`✅ Passed: ${passed}`);
+    console.log(`❌ Failed: ${failed}`);
+
+    if (failed === 0) {
+      console.log('\n🚀 System is healthy and ready to run!');
+    } else {
+      console.log('\n⚠️ System needs attention before running.');
     }
   }
 }
 
-const monitor = new HealthMonitor();
-monitor.checkSystemHealth();
+const checker = new HealthChecker();
+checker.checkEnvironment();

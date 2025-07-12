@@ -89,6 +89,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`💰 Max Gain Mode: ${process.env.TARGET_MULTIPLIER}x multiplier`);
   console.log(`⚡ Max Leverage: ${process.env.MAX_LEVERAGE_MULTIPLIER}x`);
+  console.log(`🔗 Server accessible at: http://0.0.0.0:${PORT}`);
 });
 
 module.exports = app;

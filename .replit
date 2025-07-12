@@ -22,7 +22,7 @@ NODE_ENV = "production"
 PORT = "5000"
 
 [workflows]
-runButton = "Fix & Deploy"
+runButton = "Start Flash Loan System"
 
 [[workflows.workflow]]
 name = "Start Application"
@@ -103,3 +103,20 @@ args = "npm run build"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm start"
+
+[[workflows.workflow]]
+name = "Start Flash Loan System"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
