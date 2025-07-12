@@ -136,4 +136,4 @@ args = "npm install"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node scripts/ultimateBot.js"
+args = "node scripts/startBot.js"
