@@ -22,7 +22,7 @@ NODE_ENV = "production"
 PORT = "5000"
 
 [workflows]
-runButton = "Start Flash Loan System"
+runButton = "Ultimate Flash Loan Bot"
 
 [[workflows.workflow]]
 name = "Start Application"
@@ -120,3 +120,20 @@ args = "npm install"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[[workflows.workflow]]
+name = "Ultimate Flash Loan Bot"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node scripts/ultimateBot.js"
