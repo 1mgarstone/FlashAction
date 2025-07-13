@@ -30,17 +30,79 @@ class MaxGainOptimizer {
   }
 
   calculateOptimalFlashLoanAmount(currentBalance, opportunity) {
-    // Use aggressive leverage for maximum gains
-    const baseAmount = currentBalance * this.leverageMultiplier;
+    // ENHANCED: Dynamic leverage based on market conditions and gas costs
+    const gasPrice = this.getCurrentGasPrice();
+    const networkCongestion = this.getNetworkCongestion();
+    
+    // Reduce leverage during high gas periods
+    let dynamicLeverage = this.leverageMultiplier;
+    if (gasPrice > 50) dynamicLeverage *= 0.7; // Reduce 30% if gas > 50 gwei
+    if (networkCongestion > 0.8) dynamicLeverage *= 0.8; // Reduce 20% if network congested
+    
+    const baseAmount = currentBalance * dynamicLeverage;
     const maxSafeAmount = this.getMaxSafeLoanAmount(opportunity);
-    return Math.min(baseAmount, maxSafeAmount);
+    const optimalAmount = Math.min(baseAmount, maxSafeAmount);
+    
+    // Ensure minimum profitability after all costs
+    const estimatedGasCost = this.estimateGasCost(optimalAmount, gasPrice);
+    const minProfitableAmount = estimatedGasCost / (opportunity.profitPercentage / 100);
+    
+    return Math.max(optimalAmount, minProfitableAmount * 1.5); // 50% buffer above break-even
   }
 
   getMaxSafeLoanAmount(opportunity) {
-    // Calculate maximum safe loan based on liquidity and slippage
-    const baseLiquidity = 2000000; // $2M base liquidity assumption
-    const slippageProtection = 0.95; // 5% slippage buffer
+    // ENHANCED: Real-time liquidity assessment
+    const tokenLiquidity = this.getTokenLiquidity(opportunity.tokenPair);
+    const dexLiquidity = this.getDexLiquidity(opportunity.buyDex, opportunity.sellDex);
+    const marketVolume = this.getMarketVolume(opportunity.tokenPair);
+    
+    // Use the most conservative estimate
+    const baseLiquidity = Math.min(tokenLiquidity, dexLiquidity, marketVolume * 0.1);
+    const slippageProtection = 0.92; // 8% slippage buffer for safety
+    
     return baseLiquidity * slippageProtection;
+  }
+
+  getCurrentGasPrice() {
+    // Simulate real gas price - in production, fetch from ethers provider
+    return 15 + (Math.random() * 60); // 15-75 gwei range
+  }
+
+  getNetworkCongestion() {
+    // Simulate network congestion - in production, analyze pending txs
+    return Math.random();
+  }
+
+  estimateGasCost(amount, gasPrice) {
+    // Enhanced gas estimation based on trade complexity
+    const baseGasLimit = amount > 1000000 ? 400000 : 250000; // Complex trades need more gas
+    const gasCostEth = (gasPrice * baseGasLimit) / 1000000000;
+    return gasCostEth * 3200; // ETH price assumption
+  }
+
+  getTokenLiquidity(tokenPair) {
+    // Mock token liquidity - replace with real DEX liquidity data
+    const liquidityMap = {
+      'WETH/USDC': 50000000,
+      'WBTC/USDT': 20000000,
+      'USDC/USDT': 80000000
+    };
+    return liquidityMap[tokenPair] || 5000000; // Default $5M
+  }
+
+  getDexLiquidity(buyDex, sellDex) {
+    // Mock DEX liquidity - replace with real DEX reserves
+    const dexLiquidityMap = {
+      'Uniswap': 30000000,
+      'SushiSwap': 15000000,
+      'PancakeSwap': 25000000
+    };
+    return Math.min(dexLiquidityMap[buyDex] || 10000000, dexLiquidityMap[sellDex] || 10000000);
+  }
+
+  getMarketVolume(tokenPair) {
+    // Mock 24h volume - replace with real market data
+    return 10000000 + (Math.random() * 50000000); // $10M-$60M range
   }
 
   async scanHighYieldOpportunities() {
@@ -104,10 +166,22 @@ class MaxGainOptimizer {
           console.log(`📈 New Balance: $${currentBalance.toFixed(2)}`);
           console.log(`🔗 TX: ${result.etherscanUrl}`);
 
-          // Compound gains by increasing position size
-          if (currentBalance > this.startingCapital * 2) {
-            this.leverageMultiplier = Math.min(this.leverageMultiplier * 1.1, 2000);
-            console.log(`⚡ Increased leverage to ${this.leverageMultiplier}x`);
+          // ENHANCED: Smart profit compounding with risk management
+          const profitMultiplier = currentBalance / this.startingCapital;
+          
+          if (profitMultiplier > 2) {
+            // Increase leverage but cap based on success rate
+            const successRate = tradesExecuted > 0 ? (tradesExecuted - (totalProfit < 0 ? 1 : 0)) / tradesExecuted : 1;
+            const maxLeverageIncrease = successRate > 0.8 ? 1.2 : 1.1;
+            
+            this.leverageMultiplier = Math.min(this.leverageMultiplier * maxLeverageIncrease, 2500);
+            console.log(`⚡ Smart leverage increase to ${this.leverageMultiplier}x (Success rate: ${(successRate * 100).toFixed(1)}%)`);
+          }
+          
+          // Compound profits into next trade
+          if (profitMultiplier > 5) {
+            this.minProfitThreshold *= 0.95; // Accept slightly lower profits for higher volume
+            console.log(`📈 Reduced profit threshold to ${this.minProfitThreshold * 100}% for higher volume`);
           }
         } else {
           console.log(`❌ Trade failed: ${result.error}`);
