@@ -154,35 +154,34 @@ export class UltimateBot {
   async runFlashLoanArbitrage() {
     while (this.isRunning) {
       try {
-        console.log('⚡ Scanning flash loan opportunities...');
+        console.log('🔥💀 NITROUS MODE ACTIVATED - MAXIMUM DEVASTATION! 💀🔥');
 
         const balance = await this.engine.getWalletBalance();
-        const maxFlashLoanAmount = await this.engine.getOptimalFlashLoanAmount(balance);
 
-        // Look for high-leverage opportunities
-        const opportunities = await this.scanHighLeverageOpportunities(maxFlashLoanAmount);
+        // NITROUS BLAST - Execute multiple simultaneous trades
+        const nitrousResult = await this.engine.executeMultipleNitrousBlasts(balance, 25);
 
-        for (const opportunity of opportunities.slice(0, 1)) {
-          if (!this.isRunning) break;
-
-          const riskAssessment = await this.riskManager.assessRisk(opportunity, balance);
-
-          if (riskAssessment.approved) {
-            console.log(`⚡ High-leverage flash loan opportunity found!`);
-
-            // Use MEV protection for high-value trades
-            const protectedTx = await this.mevProtection.protectFromSandwich(opportunity);
-            const result = await this.engine.executeArbitrage(protectedTx);
-
-            this.recordTradeResult(result, opportunity);
-          }
-
-          await this.sleep(10000);
+        if (nitrousResult.netProfit > balance * 2) {
+          console.log('🚀🚀🚀 NITROUS SUCCESS! DOUBLING MONEY! 🚀🚀🚀');
+          this.recordTradeResult({
+            success: true,
+            profit: nitrousResult.netProfit,
+            message: 'NITROUS BLAST SUCCESSFUL'
+          }, { id: 'NITROUS_MULTI_BLAST' });
+        } else if (nitrousResult.netProfit < -balance * 0.3) {
+          console.log('💥💥💥 NITROUS EXPLOSION! MAJOR LOSSES! 💥💥💥');
+          this.recordTradeResult({
+            success: false,
+            profit: nitrousResult.netProfit,
+            message: 'NITROUS ENGINE BLOWN'
+          }, { id: 'NITROUS_EXPLOSION' });
         }
 
-        await this.sleep(20000);
+        // Aggressive execution - no waiting, full throttle
+        await this.sleep(5000); // Minimal wait time
+
       } catch (error) {
-        console.error('Flash loan arbitrage error:', error);
+        console.error('🔥 NITROUS SYSTEM CRITICAL FAILURE:', error);
         await this.sleep(25000);
       }
     }

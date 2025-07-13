@@ -62,6 +62,10 @@ export interface RiskSettings {
   lossAlerts: boolean;
   autoPause: boolean;
   autoExecute: boolean;
+  nitrousMode?: boolean;
+  maxLeverageMultiplier?: number;
+  raceTrackMode?: boolean;
+  yoloTolerance?: number;
 }
 
 export interface FlashLoanConfig {

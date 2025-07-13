@@ -45,15 +45,19 @@ export function TradingDashboard() {
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [riskSettings, setRiskSettings] = useState({
-    maxPositionSize: 80,
-    dailyLossLimit: 2,
-    maxConcurrentTrades: 5,
-    minProfitThreshold: 0.10,
-    maxGasPrice: 50,
-    slippageTolerance: 0.5,
-    mevProtection: true,
-    lossAlerts: true,
-    autoPause: true
+    maxPositionSize: 100, // 100% position size - ALL IN
+    dailyLossLimit: 95, // 95% daily loss limit - YOLO mode
+    maxConcurrentTrades: 50, // 50 concurrent trades
+    minProfitThreshold: 0.37, // 0.37% minimum as you specified
+    maxGasPrice: 200, // Higher gas for speed
+    slippageTolerance: 2.0, // Higher slippage tolerance for speed
+    mevProtection: false, // Disable for maximum speed
+    lossAlerts: false, // No alerts in race mode
+    autoPause: false, // Never pause - full throttle
+    nitrousMode: true, // NITROUS ACTIVATED
+    maxLeverageMultiplier: 500, // 500x leverage
+    raceTrackMode: true, // RACE TRACK ENGAGED
+    yoloTolerance: 99 // 99% YOLO tolerance
   });
 
   const handleExecuteArbitrage = async (opportunityId: string) => {
