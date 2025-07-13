@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbitrage Trading Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(0,0,0,0.5);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #00ff88; }
+        .wallet-btn {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .wallet-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,255,136,0.3); }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card-title { font-size: 1.2rem; margin-bottom: 1rem; color: #00ff88; }
+        .stat-value { font-size: 2rem; font-weight: bold; color: #fff; }
+        .stat-label { color: #ccc; font-size: 0.9rem; }
+        .opportunities {
+            grid-column: 1 / -1;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .opportunity-item {
+            background: rgba(0,255,136,0.1);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .execute-btn {
+            background: #00ff88;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .status { text-align: center; margin: 2rem; }
+        .status.connected { color: #00ff88; }
+        .status.disconnected { color: #ff4444; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🚀 FlashArb Pro</div>
+        <button class="wallet-btn" onclick="connectWallet()" id="walletBtn">
+            Connect Wallet
+        </button>
+    </div>
+
+    <div class="status disconnected" id="status">
+        Wallet not connected - Connect to start trading
+    </div>
+
+    <div class="dashboard" id="dashboard" style="display: none;">
+        <div class="card">
+            <div class="card-title">Portfolio Balance</div>
+            <div class="stat-value">$0.00</div>
+            <div class="stat-label">Available for trading</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Today's P&L</div>
+            <div class="stat-value">+$0.00</div>
+            <div class="stat-label">0% change</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Active Opportunities</div>
+            <div class="stat-value">3</div>
+            <div class="stat-label">Live arbitrage chances</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Success Rate</div>
+            <div class="stat-value">85.2%</div>
+            <div class="stat-label">Last 50 trades</div>
+        </div>
+
+        <div class="opportunities">
+            <h2 style="color: #00ff88; margin-bottom: 1rem;">🔍 Live Arbitrage Opportunities</h2>
+            
+            <div class="opportunity-item">
+                <div>
+                    <strong>ETH/USDC</strong><br>
+                    <small>Uniswap → SushiSwap</small><br>
+                    <span style="color: #00ff88;">+2.3% profit</span>
+                </div>
+                <div>
+                    <div>Est. Profit: <strong>$45.20</strong></div>
+                    <button class="execute-btn" onclick="executeArbitrage('ETH/USDC')">Execute</button>
+                </div>
+            </div>
+
+            <div class="opportunity-item">
+                <div>
+                    <strong>WBTC/USDT</strong><br>
+                    <small>1inch → Balancer</small><br>
+                    <span style="color: #00ff88;">+1.8% profit</span>
+                </div>
+                <div>
+                    <div>Est. Profit: <strong>$32.10</strong></div>
+                    <button class="execute-btn" onclick="executeArbitrage('WBTC/USDT')">Execute</button>
+                </div>
+            </div>
+
+            <div class="opportunity-item">
+                <div>
+                    <strong>MATIC/USDC</strong><br>
+                    <small>QuickSwap → Curve</small><br>
+                    <span style="color: #00ff88;">+3.1% profit</span>
+                </div>
+                <div>
+                    <div>Est. Profit: <strong>$28.50</strong></div>
+                    <button class="execute-btn" onclick="executeArbitrage('MATIC/USDC')">Execute</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let walletConnected = false;
+
+        async function connectWallet() {
+            const btn = document.getElementById('walletBtn');
+            const status = document.getElementById('status');
+            const dashboard = document.getElementById('dashboard');
+
+            if (!walletConnected) {
+                if (typeof window.ethereum !== 'undefined') {
+                    try {
+                        btn.textContent = 'Connecting...';
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        
+                        walletConnected = true;
+                        btn.textContent = `${accounts[0].substring(0,6)}...${accounts[0].substring(38)}`;
+                        status.textContent = '✅ Wallet Connected - Ready to trade!';
+                        status.className = 'status connected';
+                        dashboard.style.display = 'grid';
+                        
+                        console.log('Wallet connected:', accounts[0]);
+                    } catch (error) {
+                        btn.textContent = 'Connect Wallet';
+                        alert('Failed to connect wallet: ' + error.message);
+                    }
+                } else {
+                    alert('MetaMask not detected! Please install MetaMask to connect your wallet.');
+                }
+            } else {
+                // Disconnect
+                walletConnected = false;
+                btn.textContent = 'Connect Wallet';
+                status.textContent = 'Wallet not connected - Connect to start trading';
+                status.className = 'status disconnected';
+                dashboard.style.display = 'none';
+            }
+        }
+
+        function executeArbitrage(pair) {
+            alert(`🚀 Executing arbitrage for ${pair}!\n\nThis would:\n1. Take flash loan\n2. Buy on cheaper exchange\n3. Sell on expensive exchange\n4. Repay loan + profit\n\nDemo mode - no real trades executed.`);
+        }
+
+        // Auto-detect wallet connection on page load
+        window.addEventListener('load', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        walletConnected = true;
+                        document.getElementById('walletBtn').textContent = `${accounts[0].substring(0,6)}...${accounts[0].substring(38)}`;
+                        document.getElementById('status').textContent = '✅ Wallet Connected - Ready to trade!';
+                        document.getElementById('status').className = 'status connected';
+                        document.getElementById('dashboard').style.display = 'grid';
+                    }
+                } catch (error) {
+                    console.log('Wallet not connected');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
