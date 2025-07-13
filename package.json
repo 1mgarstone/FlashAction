@@ -1,7 +1,7 @@
 {
-  "name": "profitstrike-pro",
+  "name": "velocitystrike",
   "version": "1.0.0",
-  "description": "Ultimate AI-Powered Arbitrage Trading Platform",
+  "description": "Ultra-Fast Arbitrage Trading Engine",
   "main": "index.js",
   "scripts": {
     "start": "expo start",

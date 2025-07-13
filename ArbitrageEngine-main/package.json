@@ -1,7 +1,7 @@
 {
-  "name": "profitstrike-engine",
+  "name": "velocitystrike-engine",
   "version": "2.0.0",
-  "description": "ProfitStrike Pro - AI Trading Engine",
+  "description": "VelocityStrike - Lightning-Fast Trading Engine",
   "main": "scripts/ultimateBot.js",
   "type": "module",
   "scripts": {

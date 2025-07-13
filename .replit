@@ -39,7 +39,7 @@ localPort = 19000
 externalPort = 3000
 
 [workflows]
-runButton = "Start App"
+runButton = "VelocityStrike Lightweight"
 
 [[workflows.workflow]]
 name = "Start Application"
@@ -271,3 +271,12 @@ args = "../scripts/build-and-copy-apk.sh"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "echo \"🎯 APK built successfully and ready for download!\""
+
+[[workflows.workflow]]
+name = "VelocityStrike Lightweight"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node simple-server.js"

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ProfitStrike Pro",
-    "slug": "profitstrike-pro",
+    "name": "VelocityStrike",
+    "slug": "velocitystrike",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
