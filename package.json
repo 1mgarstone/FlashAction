@@ -1,7 +1,7 @@
 {
-  "name": "velocitystrike",
+  "name": "lullabyte",
   "version": "1.0.0",
-  "description": "Ultra-Fast Arbitrage Trading Engine",
+  "description": "Sweet Dreams, Sweet Profits - Gentle Trading Engine",
   "main": "index.js",
   "scripts": {
     "start": "expo start",

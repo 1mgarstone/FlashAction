@@ -75,7 +75,7 @@ app.get('/', (req, res) => {
     <!DOCTYPE html>
     <html>
     <head>
-        <title>VelocityStrike Dashboard</title>
+        <title>LullaByte Dashboard</title>
         <style>
             body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
             .card { background: #2d2d2d; padding: 20px; margin: 10px 0; border-radius: 8px; }
@@ -87,7 +87,7 @@ app.get('/', (req, res) => {
         </style>
     </head>
     <body>
-        <h1>🚀 VelocityStrike Trading Dashboard</h1>
+        <h1>🍯 LullaByte Trading Dashboard</h1>
         
         <div class="card">
             <h3>Agent Status</h3>
@@ -172,6 +172,6 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 VelocityStrike Dashboard running on port ${PORT}`);
+  console.log(`🍯 LullaByte Dashboard running on port ${PORT}`);
   console.log(`💻 Access at: http://localhost:${PORT}`);
 });

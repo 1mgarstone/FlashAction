@@ -1,7 +1,7 @@
 {
-  "name": "velocitystrike-engine",
+  "name": "lullabyte-engine",
   "version": "2.0.0",
-  "description": "VelocityStrike - Lightning-Fast Trading Engine",
+  "description": "LullaByte - Sweet Dreams Trading Engine",
   "main": "scripts/ultimateBot.js",
   "type": "module",
   "scripts": {

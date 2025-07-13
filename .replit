@@ -39,7 +39,7 @@ localPort = 19000
 externalPort = 3000
 
 [workflows]
-runButton = "VelocityStrike Lightweight"
+runButton = "LullaByte Gentle Mode"
 
 [[workflows.workflow]]
 name = "Start Application"
@@ -274,6 +274,15 @@ args = "echo \"🎯 APK built successfully and ready for download!\""
 
 [[workflows.workflow]]
 name = "VelocityStrike Lightweight"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node simple-server.js"
+
+[[workflows.workflow]]
+name = "LullaByte Gentle Mode"
 author = 44850244
 mode = "sequential"
 
