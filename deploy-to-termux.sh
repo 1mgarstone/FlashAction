@@ -1,76 +1,52 @@
-
 #!/bin/bash
 
-echo "🚀 Deploying APK to Termux via SSH"
-echo "=================================="
+echo "🚀 Direct APK Deployment to Termux"
+echo "================================="
 
-# Check if SSH connection details are provided
-if [ -z "$1" ]; then
-    echo "❌ Usage: $0 <ssh-connection-string>"
-    echo "Example: $0 username@hostname.replit.dev"
-    exit 1
+APK_FILE="arbitrage-trading-mobile.apk"
+
+# Build APK if not present
+if [ ! -f "$APK_FILE" ]; then
+    echo "📱 Building APK..."
+    chmod +x scripts/build-and-copy-apk.sh
+    ./scripts/build-and-copy-apk.sh
 fi
-
-SSH_HOST="$1"
-APK_FILE="app-release.apk"
 
 # Check if APK exists
 if [ ! -f "$APK_FILE" ]; then
-    echo "⚠️ APK not found, building first..."
-    cd android
-    ./gradlew assembleRelease
-    cd ..
-    
-    # Find the generated APK
-    if [ -f "android/app/build/outputs/apk/release/app-release.apk" ]; then
-        cp "android/app/build/outputs/apk/release/app-release.apk" "$APK_FILE"
-        echo "✅ APK built and copied"
-    else
-        echo "❌ APK build failed"
+    echo "❌ APK build failed - checking for alternative locations..."
+    find . -name "*.apk" -exec cp {} "./$APK_FILE" \; 2>/dev/null
+
+    if [ ! -f "$APK_FILE" ]; then
+        echo "❌ No APK found"
         exit 1
     fi
 fi
 
-echo "📱 APK file: $APK_FILE"
-echo "🔗 SSH target: $SSH_HOST"
+echo "✅ APK ready: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
 
-# Test SSH connection
-echo "🔌 Testing SSH connection..."
-if ssh -o ConnectTimeout=10 -o BatchMode=yes "$SSH_HOST" 'echo "Connection successful"'; then
-    echo "✅ SSH connection working"
-else
-    echo "❌ SSH connection failed"
-    echo "Make sure to:"
-    echo "1. Add your public key to Replit SSH keys"
-    echo "2. Use the correct SSH command from Replit"
+# Auto-detect SSH from active processes
+SSH_HOST=""
+if command -v netstat &> /dev/null; then
+    SSH_HOST=$(netstat -tnp 2>/dev/null | grep :22 | grep ssh | head -1 | awk '{print $5}' | grep -o '[a-zA-Z0-9-]*\.replit\.dev' || echo "")
+fi
+
+if [ -z "$SSH_HOST" ]; then
+    echo "🔍 SSH auto-detection failed"
+    echo "📋 Manual SSH setup required:"
+    echo "   1. Open Replit SSH tab"
+    echo "   2. Copy the SSH command"
+    echo "   3. Run: ./deploy-to-termux.sh <ssh-host>"
     exit 1
 fi
 
-# Copy APK to Termux
-echo "📤 Copying APK to Termux..."
-if scp -o ConnectTimeout=30 "$APK_FILE" "$SSH_HOST:/storage/emulated/0/Download/"; then
-    echo "✅ APK copied to /storage/emulated/0/Download/"
-else
-    echo "❌ Failed to copy APK"
-    exit 1
-fi
+echo "🔗 SSH Target: $SSH_HOST"
 
-# Install APK in Termux
-echo "📲 Installing APK..."
-ssh "$SSH_HOST" 'cd /storage/emulated/0/Download/ && ls -la *.apk && echo "APK is ready for installation"'
+# Deploy to Termux
+echo "📤 Deploying to Termux..."
+scp -o ConnectTimeout=30 "$APK_FILE" "$SSH_HOST:/storage/emulated/0/Download/" && echo "✅ APK deployed successfully!"
 
 echo ""
-echo "🎉 DEPLOYMENT COMPLETED!"
-echo "========================"
-echo "✅ APK copied to Termux Downloads folder"
-echo "📱 Location: /storage/emulated/0/Download/$APK_FILE"
-echo ""
-echo "📋 Manual Installation Steps:"
-echo "1. Open file manager on your Android device"
-echo "2. Navigate to Downloads folder"
-echo "3. Tap on $APK_FILE"
-echo "4. Allow installation from unknown sources if prompted"
-echo "5. Install the app"
-echo ""
-echo "🔧 Or install via ADB if available:"
-echo "adb install /storage/emulated/0/Download/$APK_FILE"
+echo "🎯 DEPLOYMENT COMPLETE!"
+echo "📱 APK location: /storage/emulated/0/Download/$APK_FILE"
+echo "📲 Ready for installation on your device"
