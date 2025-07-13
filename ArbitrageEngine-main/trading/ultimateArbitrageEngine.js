@@ -48,54 +48,223 @@ class UltimateArbitrageEngine {
   }
 
   async findBestOpportunity(amount) {
-    // INTELLIGENT TOKEN CATEGORIZATION SYSTEM
+    // INTELLIGENT TOKEN CATEGORIZATION SYSTEM with TIME-BASED OPTIMIZATION
     const tokenCategories = await this.categorizeTokensByArbitrageFrequency();
+    const timingPatterns = await this.analyzeTimingPatterns();
     
-    // Search high-frequency tokens first (50+ opportunities per day)
-    const highFreqOpportunity = await this.scanTokenCategory(tokenCategories.highFrequency, amount);
-    if (highFreqOpportunity && highFreqOpportunity.profitPercentage >= this.profitThreshold) {
-      return highFreqOpportunity;
+    // ADJUST STRATEGY BASED ON CURRENT TIME PERIOD
+    const currentPeriod = timingPatterns.currentOptimalPeriod;
+    console.log(`🕐 Current period: ${currentPeriod.type} (Score: ${currentPeriod.score.toFixed(2)}) - ${currentPeriod.recommendation} strategy`);
+    
+    // TIME-AWARE PROFIT THRESHOLDS
+    let adjustedThreshold = this.profitThreshold;
+    if (currentPeriod.score > 0.7) {
+      adjustedThreshold *= 0.8; // Lower threshold during high-activity periods
+    } else if (currentPeriod.score < 0.3) {
+      adjustedThreshold *= 1.5; // Higher threshold during low-activity periods
+    }
+    
+    // PRIORITIZE CATEGORIES BASED ON TIME PATTERNS
+    const prioritizedCategories = this.prioritizeCategoriesByTime(tokenCategories, timingPatterns);
+    
+    for (const category of prioritizedCategories) {
+      const opportunity = await this.scanTokenCategory(category.tokens, amount);
+      
+      if (opportunity && opportunity.profitPercentage >= adjustedThreshold) {
+        // TIME-BASED CONFIDENCE ADJUSTMENT
+        opportunity.timeConfidence = this.calculateTimeBasedConfidence(opportunity, timingPatterns);
+        opportunity.adjustedThreshold = adjustedThreshold;
+        opportunity.timePeriod = currentPeriod.type;
+        
+        console.log(`⏰ TIME-OPTIMIZED OPPORTUNITY: ${opportunity.profitPercentage.toFixed(3)}% (${category.priority} priority)`);
+        return opportunity;
+      }
     }
 
-    // Search medium-frequency tokens (10-50 opportunities per day)  
-    const mediumFreqOpportunity = await this.scanTokenCategory(tokenCategories.mediumFrequency, amount);
-    if (mediumFreqOpportunity && mediumFreqOpportunity.profitPercentage >= this.profitThreshold) {
-      return mediumFreqOpportunity;
-    }
+    // Fallback: Quick scan all tokens with time adjustment
+    return await this.scanAllTokensForOpportunities(amount, adjustedThreshold);
+  }
 
-    // Search rare but HIGH-PROFIT tokens (0.1-10% opportunities but massive gains)
-    const rareGemOpportunity = await this.scanTokenCategory(tokenCategories.rareGems, amount);
-    if (rareGemOpportunity && rareGemOpportunity.profitPercentage >= 5.0) { // 5%+ for rare gems
-      console.log(`💎 RARE GEM DETECTED: ${rareGemOpportunity.profitPercentage.toFixed(2)}% profit!`);
-      return rareGemOpportunity;
+  prioritizeCategoriesByTime(tokenCategories, timingPatterns) {
+    const currentHour = new Date().getUTCHours();
+    const priorities = [];
+    
+    // High-frequency tokens - always priority during business hours
+    if (timingPatterns.highVolumePeriods.includes(currentHour)) {
+      priorities.push({ tokens: tokenCategories.highFrequency, priority: 'HIGH-VOLUME' });
     }
+    
+    // Stablecoin arbitrage during US market close / Asian open
+    if (timingPatterns.stablecoinPeriods.includes(currentHour)) {
+      priorities.push({ tokens: tokenCategories.highFrequency.filter(t => ['USDC', 'USDT', 'DAI'].includes(t.symbol)), priority: 'STABLECOIN' });
+    }
+    
+    // BTC/ETH during Asian trading hours
+    if (timingPatterns.btcTradingHours.includes(currentHour)) {
+      priorities.push({ tokens: tokenCategories.highFrequency.filter(t => ['WETH', 'WBTC'].includes(t.symbol)), priority: 'BTC-ETH' });
+      priorities.push({ tokens: tokenCategories.mediumFrequency.filter(t => ['WBTC'].includes(t.symbol)), priority: 'BTC-EXTENDED' });
+    }
+    
+    // DeFi tokens during yield farming hours
+    if (timingPatterns.deFiHours.includes(currentHour)) {
+      priorities.push({ tokens: tokenCategories.mediumFrequency.filter(t => ['UNI', 'LINK'].includes(t.symbol)), priority: 'DEFI' });
+    }
+    
+    // 72-hour margin periods - RARE GEMS with massive profit potential
+    if (timingPatterns.leverageMarginHours.includes(currentHour)) {
+      priorities.push({ tokens: tokenCategories.rareGems, priority: 'LEVERAGE-MARGIN' });
+      console.log(`💎 72-HOUR MARGIN PERIOD: Scanning for high-profit leverage opportunities`);
+    }
+    
+    // Default fallback order
+    priorities.push({ tokens: tokenCategories.highFrequency, priority: 'DEFAULT-HIGH' });
+    priorities.push({ tokens: tokenCategories.mediumFrequency, priority: 'DEFAULT-MEDIUM' });
+    priorities.push({ tokens: tokenCategories.rareGems, priority: 'DEFAULT-RARE' });
+    
+    return priorities;
+  }
 
-    // Fallback: Quick scan all tokens
-    return await this.scanAllTokensForOpportunities(amount);
+  calculateTimeBasedConfidence(opportunity, timingPatterns) {
+    const currentHour = new Date().getUTCHours();
+    let confidence = 0.5; // Base confidence
+    
+    // Higher confidence during optimal periods
+    if (timingPatterns.currentOptimalPeriod.score > 0.7) {
+      confidence += 0.3;
+    }
+    
+    // Token-specific time confidence
+    if (opportunity.tokenA && opportunity.tokenA.peakTimes) {
+      if (opportunity.tokenA.peakTimes.includes(currentHour)) {
+        confidence += 0.2;
+      }
+    }
+    
+    // Direction doesn't matter for arbitrage - only price difference
+    confidence += Math.min(opportunity.profitPercentage / 10, 0.3); // Up to 30% boost for high profit
+    
+    return Math.min(confidence, 1.0);
   }
 
   async categorizeTokensByArbitrageFrequency() {
     // Historical data analysis for token arbitrage frequency
     const tokenFrequencyData = await this.analyzeHistoricalArbitrageData();
+    const timeBasedPatterns = await this.analyzeTimingPatterns();
     
     return {
       highFrequency: [
-        { symbol: 'WETH', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', avgOpportunities: 80 },
-        { symbol: 'USDC', address: '0xA0b86a33E6417aeb71', avgOpportunities: 75 },
-        { symbol: 'USDT', address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', avgOpportunities: 70 },
-        { symbol: 'DAI', address: '0x6B175474E89094C44Da98b954EedeAC495271d0F', avgOpportunities: 60 }
+        { symbol: 'WETH', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', avgOpportunities: 80, peakTimes: timeBasedPatterns.highVolumePeriods },
+        { symbol: 'USDC', address: '0xA0b86a33E6417aeb71', avgOpportunities: 75, peakTimes: timeBasedPatterns.stablecoinPeriods },
+        { symbol: 'USDT', address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', avgOpportunities: 70, peakTimes: timeBasedPatterns.stablecoinPeriods },
+        { symbol: 'DAI', address: '0x6B175474E89094C44Da98b954EedeAC495271d0F', avgOpportunities: 60, peakTimes: timeBasedPatterns.stablecoinPeriods }
       ],
       mediumFrequency: [
-        { symbol: 'WBTC', address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', avgOpportunities: 25 },
-        { symbol: 'UNI', address: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', avgOpportunities: 20 },
-        { symbol: 'LINK', address: '0x514910771AF9Ca656af840dff83E8264EcF986CA', avgOpportunities: 15 }
+        { symbol: 'WBTC', address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', avgOpportunities: 25, peakTimes: timeBasedPatterns.btcTradingHours },
+        { symbol: 'UNI', address: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', avgOpportunities: 20, peakTimes: timeBasedPatterns.deFiHours },
+        { symbol: 'LINK', address: '0x514910771AF9Ca656af840dff83E8264EcF986CA', avgOpportunities: 15, peakTimes: timeBasedPatterns.altcoinHours }
       ],
       rareGems: [
-        { symbol: 'AAVE', address: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9', avgOpportunities: 2, avgProfit: 25.5 },
-        { symbol: 'MKR', address: '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', avgOpportunities: 1, avgProfit: 45.2 },
-        { symbol: 'COMP', address: '0xc00e94Cb662C3520282E6f5717214004A7f26888', avgOpportunities: 0.5, avgProfit: 60.1 }
+        { symbol: 'AAVE', address: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9', avgOpportunities: 2, avgProfit: 25.5, peakTimes: timeBasedPatterns.leverageMarginHours },
+        { symbol: 'MKR', address: '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', avgOpportunities: 1, avgProfit: 45.2, peakTimes: timeBasedPatterns.leverageMarginHours },
+        { symbol: 'COMP', address: '0xc00e94Cb662C3520282E6f5717214004A7f26888', avgOpportunities: 0.5, avgProfit: 60.1, peakTimes: timeBasedPatterns.leverageMarginHours }
       ]
     };
+  }
+
+  async analyzeTimingPatterns() {
+    // TIME-BASED PATTERN ANALYSIS for optimal arbitrage opportunities
+    const currentHour = new Date().getUTCHours();
+    const currentDay = new Date().getUTCDay();
+    
+    return {
+      // 8AM-12PM UTC (US East Coast morning) - High volume institutional trading
+      highVolumePeriods: [8, 9, 10, 11, 12],
+      
+      // 2PM-6PM UTC (US market close, Asian market open) - Stablecoin arbitrage peak
+      stablecoinPeriods: [14, 15, 16, 17, 18],
+      
+      // 6PM-2AM UTC (Asian trading hours) - BTC/ETH arbitrage peak
+      btcTradingHours: [18, 19, 20, 21, 22, 23, 0, 1, 2],
+      
+      // 10PM-6AM UTC (Night traders, DeFi yield farming) - DeFi token opportunities
+      deFiHours: [22, 23, 0, 1, 2, 3, 4, 5, 6],
+      
+      // 72-hour margin periods (Mon-Wed, Thu-Sat cycles) - Big leveraged position opportunities
+      leverageMarginHours: this.calculateLeverageMarginPeriods(currentHour, currentDay),
+      
+      // Weekend patterns (Sat-Sun) - Lower volume but higher spreads
+      weekendPatterns: currentDay === 0 || currentDay === 6 ? [12, 13, 14, 15, 16, 17] : [],
+      
+      currentOptimalPeriod: this.getCurrentOptimalPeriod(currentHour, currentDay)
+    };
+  }
+
+  calculateLeverageMarginPeriods(currentHour, currentDay) {
+    // Track 72-hour margin cycles (3-day periods)
+    const leveragePeriods = [];
+    
+    // Monday-Wednesday cycle (Days 1-3)
+    if (currentDay >= 1 && currentDay <= 3) {
+      leveragePeriods.push(...[6, 7, 8, 18, 19, 20]); // Morning and evening institutional hours
+    }
+    
+    // Thursday-Saturday cycle (Days 4-6)
+    if (currentDay >= 4 && currentDay <= 6) {
+      leveragePeriods.push(...[6, 7, 8, 18, 19, 20, 21, 22]); // Extended hours for position closure
+    }
+    
+    return leveragePeriods;
+  }
+
+  getCurrentOptimalPeriod(currentHour, currentDay) {
+    // INTELLIGENT TIMING ASSESSMENT
+    let optimalScore = 0;
+    let periodType = 'low';
+    
+    // High volume institutional hours (8AM-12PM UTC)
+    if (currentHour >= 8 && currentHour <= 12) {
+      optimalScore += 0.8;
+      periodType = 'institutional';
+    }
+    
+    // Asian market overlap (6PM-2AM UTC)
+    if (currentHour >= 18 || currentHour <= 2) {
+      optimalScore += 0.7;
+      periodType = 'asian-overlap';
+    }
+    
+    // DeFi yield farming hours (10PM-6AM UTC)
+    if (currentHour >= 22 || currentHour <= 6) {
+      optimalScore += 0.6;
+      periodType = 'defi-farming';
+    }
+    
+    // 72-hour margin period boost
+    if (this.isIn72HourMarginPeriod(currentHour, currentDay)) {
+      optimalScore += 0.9;
+      periodType = 'leverage-margin';
+    }
+    
+    // Weekend adjustment (lower volume, higher spreads)
+    if (currentDay === 0 || currentDay === 6) {
+      optimalScore *= 0.6;
+      periodType += '-weekend';
+    }
+    
+    return {
+      score: Math.min(optimalScore, 1.0),
+      type: periodType,
+      recommendation: optimalScore > 0.7 ? 'AGGRESSIVE' : optimalScore > 0.4 ? 'MODERATE' : 'CONSERVATIVE'
+    };
+  }
+
+  isIn72HourMarginPeriod(currentHour, currentDay) {
+    // Check if we're in a 72-hour leveraged trading cycle
+    const isMonWedCycle = currentDay >= 1 && currentDay <= 3;
+    const isThuSatCycle = currentDay >= 4 && currentDay <= 6;
+    const isOptimalHour = (currentHour >= 6 && currentHour <= 8) || (currentHour >= 18 && currentHour <= 22);
+    
+    return (isMonWedCycle || isThuSatCycle) && isOptimalHour;
   }
 
   async scanTokenCategory(tokens, amount) {
@@ -477,22 +646,45 @@ class UltimateArbitrageEngine {
   }
 
   async scanForRapidOpportunities() {
-    // 🔍 RAPID OPPORTUNITY SCANNER - Same DEX pairs
+    // 🔍 TIME-AWARE RAPID OPPORTUNITY SCANNER
     const recentlyExecuted = new Map();
+    let scanInterval = 500; // Base scan interval
 
     setInterval(async () => {
       if (!this.isActive) return;
 
       try {
+        // DYNAMIC SCAN FREQUENCY based on time patterns
+        const timingPatterns = await this.analyzeTimingPatterns();
+        const currentPeriod = timingPatterns.currentOptimalPeriod;
+        
+        // Adjust scan frequency based on time period optimality
+        if (currentPeriod.score > 0.7) {
+          scanInterval = 250; // Faster scanning during high-activity periods
+        } else if (currentPeriod.score < 0.3) {
+          scanInterval = 1000; // Slower scanning during low-activity periods
+        } else {
+          scanInterval = 500; // Default
+        }
+
         const opportunity = await this.findBestOpportunity(200000);
 
         if (opportunity) {
           const pairKey = `${opportunity.tokenA.address}-${opportunity.tokenB.address}-${opportunity.buyDex}-${opportunity.sellDex}`;
           const lastExecution = recentlyExecuted.get(pairKey);
 
-          // Execute if profitable and not executed recently (< 5 seconds ago)
-          if (!lastExecution || (Date.now() - lastExecution) > 5000) {
-            console.log(`🎯 RAPID SCAN: Found ${opportunity.profitPercentage.toFixed(3)}% opportunity`);
+          // TIME-BASED EXECUTION COOLDOWN
+          let cooldownPeriod = 5000; // Default 5 seconds
+          if (currentPeriod.type === 'leverage-margin') {
+            cooldownPeriod = 2000; // Faster execution during margin periods
+          } else if (currentPeriod.type.includes('weekend')) {
+            cooldownPeriod = 10000; // Longer cooldown on weekends
+          }
+
+          // Execute if profitable and not executed recently
+          if (!lastExecution || (Date.now() - lastExecution) > cooldownPeriod) {
+            console.log(`🎯 TIME-OPTIMIZED SCAN: Found ${opportunity.profitPercentage.toFixed(3)}% opportunity`);
+            console.log(`⏰ Period: ${currentPeriod.type} | Confidence: ${opportunity.timeConfidence?.toFixed(2) || 'N/A'}`);
 
             this.executeInstantTrade(opportunity);
             recentlyExecuted.set(pairKey, Date.now());
@@ -501,7 +693,31 @@ class UltimateArbitrageEngine {
       } catch (error) {
         console.log(`🔍 Scan error: ${error.message}`);
       }
-    }, 500); // Scan every 500ms for opportunities
+    }, scanInterval);
+
+    // PERIODIC TIMING PATTERN ANALYSIS
+    setInterval(() => {
+      this.logTimingInsights();
+    }, 300000); // Every 5 minutes
+  }
+
+  async logTimingInsights() {
+    const timingPatterns = await this.analyzeTimingPatterns();
+    const currentPeriod = timingPatterns.currentOptimalPeriod;
+    
+    console.log('\n📊 TIMING INSIGHTS:');
+    console.log(`🕐 Current Time: ${new Date().toUTCString()}`);
+    console.log(`⏰ Period Type: ${currentPeriod.type}`);
+    console.log(`📈 Optimality Score: ${currentPeriod.score.toFixed(2)}/1.0`);
+    console.log(`🎯 Strategy: ${currentPeriod.recommendation}`);
+    
+    if (timingPatterns.leverageMarginHours.includes(new Date().getUTCHours())) {
+      console.log(`💎 🚨 72-HOUR MARGIN PERIOD ACTIVE - High-profit opportunities expected!`);
+    }
+    
+    if (timingPatterns.weekendPatterns.length > 0) {
+      console.log(`🏖️ Weekend trading - Lower volume, higher spreads expected`);
+    }
   }
 }
 
