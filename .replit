@@ -163,3 +163,28 @@ args = "./scripts/build-and-copy-apk.sh"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "echo \"✅ APK ready for download!\""
+
+[[workflows.workflow]]
+name = "Build and Auto-Deploy to Device"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x scripts/build-and-copy-apk.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./scripts/build-and-copy-apk.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x scripts/deploy-to-device.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./scripts/deploy-to-device.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🎯 Complete deployment finished!\""
