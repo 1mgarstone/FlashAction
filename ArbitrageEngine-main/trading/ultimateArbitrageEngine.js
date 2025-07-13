@@ -50,7 +50,7 @@ class UltimateArbitrageEngine {
   async findBestOpportunity(amount) {
     // Real high-volume, liquid token pairs that actually have arbitrage opportunities
     const tokens = await this.getHighVolumeTokenPairs();
-    
+
     // Priority tokens with highest arbitrage potential
     const priorityTokens = [
       { symbol: 'WETH', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', priority: 1 },
@@ -117,10 +117,10 @@ class UltimateArbitrageEngine {
     const gasPrice = await this.getCurrentGasPrice();
     const complexityMultiplier = amount > 100000 ? 1.5 : 1.0; // Complex trades cost more gas
     const baseGasLimit = 250000 * complexityMultiplier;
-    
+
     const gasCostEth = (gasPrice * baseGasLimit) / 1000000000;
     const gasCostUsd = gasCostEth * 3000; // ETH price assumption
-    
+
     return Math.max(gasCostUsd, 8); // Minimum $8 gas cost
   }
 
@@ -131,7 +131,7 @@ class UltimateArbitrageEngine {
       // Simulation already validated profitability - just execute
       const gasPrice = await this.getCurrentGasPrice() * 1.5; // +50% for guaranteed execution
       const gasLimit = 350000; // Standard for arbitrage
-      
+
       console.log(`⚡ EXECUTING: ${opportunity.profitPercentage.toFixed(3)}% spread`);
 
       // Execute immediately - no more redundant checks
@@ -161,18 +161,18 @@ class UltimateArbitrageEngine {
     // 🔗 OPPORTUNITY CHAINING - Execute same opportunity multiple times rapidly
     try {
       console.log(`🔗 CHAINING opportunity: ${originalOpportunity.tokenA.symbol}/${originalOpportunity.tokenB.symbol}`);
-      
+
       // Check if same opportunity still exists with slightly higher ratio
       const chainedOpportunity = await this.findBestOpportunity(originalOpportunity.amount);
-      
+
       if (chainedOpportunity && 
           chainedOpportunity.tokenA.address === originalOpportunity.tokenA.address &&
           chainedOpportunity.tokenB.address === originalOpportunity.tokenB.address &&
           chainedOpportunity.buyDex === originalOpportunity.buyDex &&
           chainedOpportunity.sellDex === originalOpportunity.sellDex) {
-        
+
         console.log(`🚀 EXECUTING CHAINED TRADE - Same DEX pair detected!`);
-        
+
         // Execute immediately without delay
         setTimeout(() => {
           this.executeInstantTrade(chainedOpportunity);
@@ -205,7 +205,7 @@ class UltimateArbitrageEngine {
       const response = await fetch(
         'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=volume_desc&per_page=20&page=1&sparkline=false'
       );
-      
+
       if (response.ok) {
         const data = await response.json();
         return data.map(token => ({
@@ -218,7 +218,7 @@ class UltimateArbitrageEngine {
     } catch (error) {
       console.log('📊 Using fallback token list - API unavailable');
     }
-    
+
     // Fallback to hardcoded high-volume pairs
     return [
       { symbol: 'WETH', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' },
@@ -247,28 +247,28 @@ class UltimateArbitrageEngine {
   async scanRealTimeArbitrageOpportunities() {
     // 🔍 REAL-TIME MARKET SCANNER
     console.log('🔍 Scanning real-time arbitrage opportunities...');
-    
+
     const opportunities = [];
     const tokens = await this.getHighVolumeTokenPairs();
-    
+
     // Scan top volume pairs first (highest probability of arbitrage)
     for (const tokenA of tokens.slice(0, 5)) { // Top 5 by volume
       for (const tokenB of tokens.slice(0, 5)) {
         if (tokenA.address === tokenB.address) continue;
-        
+
         const opportunity = await this.checkPairOpportunity(tokenA, tokenB, 100000);
         if (opportunity && opportunity.profitPercentage >= this.profitThreshold) {
           opportunities.push(opportunity);
         }
       }
     }
-    
+
     return opportunities.sort((a, b) => b.profitPercentage - a.profitPercentage);
   }
 
   async checkPairOpportunity(tokenA, tokenB, amount) {
     const prices = {};
-    
+
     // Get prices from all configured DEXes in parallel
     const pricePromises = this.dexes.map(async (dex) => {
       try {
@@ -280,27 +280,27 @@ class UltimateArbitrageEngine {
         console.log(`⚠️ ${dex.name} price fetch failed for ${tokenA.symbol}/${tokenB.symbol}`);
       }
     });
-    
+
     await Promise.all(pricePromises);
-    
+
     const priceEntries = Object.entries(prices);
     if (priceEntries.length < 2) return null;
-    
+
     const buyDex = priceEntries.reduce((min, curr) => curr[1] < min[1] ? curr : min);
     const sellDex = priceEntries.reduce((max, curr) => curr[1] > max[1] ? curr : max);
-    
+
     if (buyDex[0] === sellDex[0]) return null;
-    
+
     const buyPrice = buyDex[1];
     const sellPrice = sellDex[1];
     const priceDiff = sellPrice - buyPrice;
     const profitPercentage = (priceDiff / buyPrice) * 100;
-    
+
     if (profitPercentage >= this.profitThreshold) {
       const flashLoanFee = amount * 0.0009;
       const gasCost = await this.estimateRealGasCost(amount);
       const netProfit = priceDiff - flashLoanFee - gasCost;
-      
+
       return {
         tokenA, tokenB, 
         buyDex: buyDex[0], sellDex: sellDex[0],
@@ -310,7 +310,7 @@ class UltimateArbitrageEngine {
         confidence: this.calculateOpportunityConfidence(profitPercentage, tokenA.volume24h)
       };
     }
-    
+
     return null;
   }
 
@@ -342,7 +342,7 @@ class UltimateArbitrageEngine {
   async getUniswapPrice(tokenA, tokenB, amount) {
     // Real Uniswap V2 price fetching using router contract
     const UNISWAP_ROUTER = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
-    
+
     try {
       // Use 1inch API for accurate pricing (they aggregate multiple DEXes)
       const response = await fetch(
@@ -353,12 +353,12 @@ class UltimateArbitrageEngine {
           }
         }
       );
-      
+
       if (response.ok) {
         const data = await response.json();
         return parseFloat(data.toTokenAmount) / parseFloat(amount);
       }
-      
+
       // Fallback to direct contract call
       return await this.getDirectContractPrice(UNISWAP_ROUTER, tokenA, tokenB, amount);
     } catch (error) {
@@ -420,21 +420,21 @@ class UltimateArbitrageEngine {
   async scanForRapidOpportunities() {
     // 🔍 RAPID OPPORTUNITY SCANNER - Same DEX pairs
     const recentlyExecuted = new Map();
-    
+
     setInterval(async () => {
       if (!this.isActive) return;
-      
+
       try {
         const opportunity = await this.findBestOpportunity(200000);
-        
+
         if (opportunity) {
           const pairKey = `${opportunity.tokenA.address}-${opportunity.tokenB.address}-${opportunity.buyDex}-${opportunity.sellDex}`;
           const lastExecution = recentlyExecuted.get(pairKey);
-          
+
           // Execute if profitable and not executed recently (< 5 seconds ago)
           if (!lastExecution || (Date.now() - lastExecution) > 5000) {
             console.log(`🎯 RAPID SCAN: Found ${opportunity.profitPercentage.toFixed(3)}% opportunity`);
-            
+
             this.executeInstantTrade(opportunity);
             recentlyExecuted.set(pairKey, Date.now());
           }
