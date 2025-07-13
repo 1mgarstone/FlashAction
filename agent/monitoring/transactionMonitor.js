@@ -52,3 +52,70 @@ export class TransactionMonitor {
     };
   }
 }
+export default class TransactionMonitor {
+  constructor() {
+    this.isRunning = false;
+    this.transactions = [];
+    this.activeMonitors = new Map();
+  }
+
+  async initialize() {
+    try {
+      console.log('🔍 Initializing Transaction Monitor...');
+      
+      this.isRunning = true;
+      console.log('✅ Transaction Monitor initialized');
+      
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Transaction Monitor initialization failed:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async start() {
+    this.isRunning = true;
+    console.log('🚀 Transaction Monitor started');
+  }
+
+  async stop() {
+    this.isRunning = false;
+    console.log('⏹️ Transaction Monitor stopped');
+  }
+
+  monitorTransaction(txHash) {
+    console.log(`📊 Monitoring transaction: ${txHash}`);
+    
+    // Simulate transaction monitoring
+    const monitor = {
+      txHash,
+      status: 'pending',
+      startTime: Date.now()
+    };
+    
+    this.activeMonitors.set(txHash, monitor);
+    
+    // Simulate confirmation after 30 seconds
+    setTimeout(() => {
+      monitor.status = 'confirmed';
+      monitor.endTime = Date.now();
+      this.transactions.push(monitor);
+      console.log(`✅ Transaction confirmed: ${txHash}`);
+    }, 30000);
+    
+    return monitor;
+  }
+
+  getRecentTrades() {
+    return this.transactions.slice(-10); // Last 10 trades
+  }
+
+  getAllTrades() {
+    return this.transactions;
+  }
+
+  getTransactionStatus(txHash) {
+    const monitor = this.activeMonitors.get(txHash);
+    return monitor ? monitor.status : 'not_found';
+  }
+}
