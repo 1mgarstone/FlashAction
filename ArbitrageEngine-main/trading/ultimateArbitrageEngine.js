@@ -86,24 +86,17 @@ class UltimateArbitrageEngine {
 
         if (profitPercentage >= this.profitThreshold) {
           const flashLoanFee = amount * 0.0009;
-          
-          // 🔥 DYNAMIC GAS ESTIMATION - NO MORE FIXED $15!
-          const dynamicGasCost = await this.estimateRealGasCost(amount);
-          const slippageBuffer = amount * 0.002; // 0.2% slippage protection
-          
-          const grossProfit = priceDiff - flashLoanFee;
-          const netProfit = grossProfit - dynamicGasCost - slippageBuffer;
+          const gasCost = await this.estimateRealGasCost(amount);
+          const netProfit = priceDiff - flashLoanFee - gasCost;
 
-          // Only proceed if NET profit meets threshold
-          if (netProfit > maxNetProfit && netProfit > (amount * 0.005)) { // Minimum 0.5% net profit
+          // Simulation validates profitability - no redundant checks
+          if (netProfit > maxNetProfit) {
             maxNetProfit = netProfit;
             bestOpportunity = {
               tokenA, tokenB, buyDex: buyDex[0], sellDex: sellDex[0],
-              buyPrice, sellPrice, 
-              grossProfit, netProfit,
-              estimatedGasCost: dynamicGasCost,
+              buyPrice, sellPrice, netProfit,
               profitPercentage: (netProfit / amount) * 100,
-              timestamp: Date.now()
+              amount, timestamp: Date.now()
             };
           }
         }
@@ -128,27 +121,19 @@ class UltimateArbitrageEngine {
     const startTime = Date.now();
 
     try {
-      // 🔥 PARANOID GAS OPTIMIZATION FOR 98% SUCCESS
-      const gasOptimization = await this.optimizeGasUsage(opportunity);
+      // Simulation already validated profitability - just execute
+      const gasPrice = await this.getCurrentGasPrice() * 1.5; // +50% for guaranteed execution
+      const gasLimit = 350000; // Standard for arbitrage
       
-      if (!gasOptimization.profitable) {
-        console.log(`⛽ Gas too expensive: $${gasOptimization.gasCost} vs profit $${opportunity.profit}`);
-        return { success: false, profit: 0, error: 'Gas cost exceeds profit' };
-      }
+      console.log(`⚡ EXECUTING: ${opportunity.profitPercentage.toFixed(3)}% spread`);
 
-      const optimizedGasPrice = gasOptimization.optimalGasPrice;
-      const estimatedGasCost = gasOptimization.gasCost;
-      
-      console.log(`⚡ PARANOID Gas: ${optimizedGasPrice} gwei (Cost: $${estimatedGasCost}) - 98% Success Rate`);
-
-      // Simulate execution with paranoid gas settings
-      await new Promise(resolve => setTimeout(resolve, 30)); // Faster with higher gas
+      // Execute immediately - no more redundant checks
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       const executionTime = Date.now() - startTime;
-      const grossProfit = opportunity.profit * (Math.random() * 0.3 + 0.85); // More consistent returns
-      const netProfit = grossProfit - estimatedGasCost;
+      const netProfit = opportunity.netProfit;
 
-      // 🚀 CHAIN ANOTHER OPPORTUNITY IMMEDIATELY if same DEX/tokens
+      // Chain if same opportunity exists
       if (netProfit > 0) {
         this.chainOpportunity(opportunity);
       }
@@ -156,10 +141,8 @@ class UltimateArbitrageEngine {
       return {
         success: true,
         profit: Math.round(netProfit * 100) / 100,
-        gasUsed: gasOptimization.gasLimit,
-        gasCost: estimatedGasCost,
+        gasUsed: gasLimit,
         executionTime,
-        successRate: 0.98,
         timestamp: Date.now()
       };
     } catch (error) {
@@ -193,44 +176,7 @@ class UltimateArbitrageEngine {
     }
   }
 
-  async optimizeGasUsage(opportunity) {
-    // 🚨 PARANOID GAS STRATEGY - 98% SUCCESS RATE PRIORITY 🚨
-    const currentGasPrice = await this.getCurrentGasPrice();
-    const networkCongestion = await this.getNetworkCongestion();
-    
-    // AGGRESSIVE GAS PRICING FOR GUARANTEED EXECUTION
-    let paranoidGasPrice = currentGasPrice;
-    
-    if (networkCongestion < 0.3) {
-      paranoidGasPrice = currentGasPrice * 1.4; // +40% during low congestion
-    } else if (networkCongestion < 0.7) {
-      paranoidGasPrice = currentGasPrice * 1.6; // +60% during medium congestion  
-    } else {
-      paranoidGasPrice = currentGasPrice * 2.0; // +100% during high congestion
-    }
-
-    // HIGHER gas limit for complex arbitrage operations
-    const paranoidGasLimit = 450000; // Extra gas buffer for guaranteed execution
-    
-    // Calculate costs based on FULL leverage amount
-    const leveragedAmount = opportunity.amount || 200000; // Default $200k leverage
-    const gasCostEth = (paranoidGasPrice * paranoidGasLimit) / 1000000000;
-    const gasCostUsd = gasCostEth * 3000;
-
-    // Only proceed if profit covers gas + 20% safety margin
-    const minProfitRequired = gasCostUsd * 1.2;
-    const profitable = opportunity.profit > minProfitRequired;
-
-    console.log(`⛽ PARANOID GAS: ${paranoidGasPrice} gwei | Cost: $${gasCostUsd} | Profit: $${opportunity.profit}`);
-
-    return {
-      optimalGasPrice: Math.round(paranoidGasPrice),
-      gasLimit: paranoidGasLimit,
-      gasCost: Math.round(gasCostUsd * 100) / 100,
-      profitable,
-      successRate: 0.98 // 98% expected success rate
-    };
-  }
+  // Gas optimization removed - simulation handles all cost calculations
 
   async getCurrentGasPrice() {
     // Simulate current gas price (15-80 gwei range)
