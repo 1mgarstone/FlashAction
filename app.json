@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ArbitrageTrading",
-    "slug": "arbitrage-trading-mobile",
+    "name": "ProfitStrike Pro",
+    "slug": "profitstrike-pro",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
