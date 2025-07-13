@@ -22,7 +22,7 @@ NODE_ENV = "production"
 PORT = "5000"
 
 [workflows]
-runButton = "Mobile Development"
+runButton = "Start App"
 
 [[workflows.workflow]]
 name = "Start Application"
@@ -164,6 +164,15 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node simple-server.js"
+
+[[workflows.workflow]]
+name = "Start App"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm start"
 
 [[ports]]
 localPort = 5000
