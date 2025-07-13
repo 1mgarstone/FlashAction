@@ -1,5 +1,24 @@
 
 {
+  "name": "trading-bot-platform",
+  "version": "1.0.0",
+  "description": "Multi-platform arbitrage trading bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "discord": "node discord-bot/index.js",
+    "telegram": "node telegram-bot/index.js",
+    "both": "concurrently \"npm run discord\" \"npm run telegram\""
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "node-telegram-bot-api": "^0.64.0",
+    "concurrently": "^8.2.2"
+  }
+}
+
+
+{
   "name": "arbitrage-trading-mobile",
   "version": "1.0.0",
   "description": "Mobile Arbitrage Trading Platform",
