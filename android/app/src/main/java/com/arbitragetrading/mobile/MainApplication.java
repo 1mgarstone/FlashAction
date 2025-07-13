@@ -1,4 +1,3 @@
-
 package com.arbitragetrading.mobile;
 
 import android.app.Application;
@@ -52,8 +51,5 @@ public class MainApplication extends Application implements ReactApplication {
   public void onCreate() {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
-    if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-      DefaultNewArchitectureEntryPoint.load();
-    }
   }
 }
