@@ -8,7 +8,7 @@ export class UltimateArbitrageEngine {
   constructor() {
     this.blockchain = new BlockchainProvider();
     this.isRunning = false;
-    this.profitThreshold = 0.5; // Minimum $0.50 profit
+    this.profitThreshold = 0.37; // Minimum 0.37% spread
     this.maxGasPrice = ethers.utils.parseUnits('50', 'gwei');
     this.providers = {
       aave: { fee: 0.0009, maxLiquidity: 2000000000 },
@@ -105,7 +105,10 @@ export class UltimateArbitrageEngine {
       
       const profit = priceDiff - flashLoanFee - gasEstimate;
 
-      if (profit > this.profitThreshold) {
+      // Calculate profit percentage
+      const profitPercentage = (priceDiff / buyPrice) * 100;
+      
+      if (profitPercentage >= this.profitThreshold && profit > 10) { // 0.37% spread + min $10 profit
         return {
           id: `${tokenA.symbol}-${tokenB.symbol}-${Date.now()}`,
           tokenA,
@@ -115,6 +118,7 @@ export class UltimateArbitrageEngine {
           buyPrice,
           sellPrice,
           profit,
+          profitPercentage,
           flashLoanProvider: bestProvider.name,
           timestamp: Date.now()
         };
@@ -154,7 +158,18 @@ export class UltimateArbitrageEngine {
     const gasPrice = await this.signer.provider.getGasPrice();
     const estimatedGas = 500000; // Conservative estimate for flash loan arbitrage
     const gasCostWei = gasPrice.mul(estimatedGas);
-    return parseFloat(ethers.utils.formatEther(gasCostWei));
+    const gasCostETH = parseFloat(ethers.utils.formatEther(gasCostWei));
+    
+    // For BSC/Polygon networks, use much lower fees (0.16 cents as discussed)
+    const networkId = await this.signer.provider.getNetwork();
+    if (networkId.chainId === 56 || networkId.chainId === 137) {
+      return 0.00016; // 16 cents in USD
+    }
+    
+    // For Ethereum mainnet, realistic $10-18 range for $200k transactions
+    const ethPriceUSD = 2000; // Approximate ETH price
+    const gasCostUSD = gasCostETH * ethPriceUSD;
+    return Math.min(Math.max(gasCostUSD, 10), 18); // Cap between $10-18
   }
 
   async executeArbitrage(opportunity) {
