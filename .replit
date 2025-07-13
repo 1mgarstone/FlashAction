@@ -328,3 +328,24 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node simple-server.js"
+
+[[workflows.workflow]]
+name = "Step-by-Step Development"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🎯 Starting Step-by-Step Development Process\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node step-tracker.js status"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"📋 Next: Test current step\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node step-tracker.js test"
