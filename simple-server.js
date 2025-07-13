@@ -86,7 +86,7 @@ app.get('/', (req, res) => {
         </style>
     </head>
     <body>
-        <h1>🍯 LullaByte Trading Dashboard</h1>
+        <h1>🎯 Trading Dashboard</h1>
 
         <div class="card">
             <h3>Agent Status</h3>
@@ -95,13 +95,13 @@ app.get('/', (req, res) => {
             <button onclick="stopAgent()">Stop Agent</button>
 
             <div style="margin-top: 15px; padding: 10px; background: #333; border-radius: 5px;">
-                <h4>🍯 Heartbeat Monitor</h4>
+                <h4>📡 Network Monitor</h4>
                 <p id="heartbeat-status">Monitoring: Off</p>
-                <button id="heartbeat-toggle" onclick="toggleHeartbeat()">Start Heartbeat</button>
+                <button id="heartbeat-toggle" onclick="toggleHeartbeat()">Start Monitor</button>
                 <div style="margin-top: 10px; font-size: 12px; color: #888;">
-                    • Gentle tap every 3 seconds = Scanning<br>
-                    • Happy ping = Profit found<br>
-                    • Soft buzz = Needs attention
+                    • Tick every 3 seconds = Scanning active<br>
+                    • Ping = Opportunity found<br>
+                    • Alert = Attention needed
                 </div>
             </div>
         </div>
@@ -168,10 +168,10 @@ app.get('/', (req, res) => {
 
                     heartbeatInterval = setInterval(() => {
                         playHeartbeat();
-                        console.log('🍯 LullaByte heartbeat - gentle monitoring');
+                        console.log('📡 Network monitor - scanning active');
                     }, 3000);
 
-                    console.log('🍯 LullaByte heartbeat monitor started');
+                    console.log('📡 Network monitor started');
                 } else {
                     isHeartbeatActive = false;
                     button.textContent = 'Start Heartbeat';
@@ -182,7 +182,7 @@ app.get('/', (req, res) => {
                         heartbeatInterval = null;
                     }
 
-                    console.log('🍯 LullaByte heartbeat monitor stopped');
+                    console.log('📡 Network monitor stopped');
                 }
             }
 
@@ -208,10 +208,10 @@ app.get('/', (req, res) => {
                     } else {
                     const opportunities = await response.json();
 
-                    // Play gentle ping if new profitable opportunities found
+                    // Play ping if new profitable opportunities found
                     if (opportunities.length > 0 && isHeartbeatActive) {
                         playPing();
-                        console.log('🍯 LullaByte found sweet opportunities!');
+                        console.log('📡 Network found opportunities!');
                     }
 
                     document.getElementById('opportunities').innerHTML = 
@@ -258,6 +258,6 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🍯 LullaByte Dashboard running on port ${PORT}`);
+  console.log(`🎯 Trading Dashboard running on port ${PORT}`);
   console.log(`💻 Access at: http://localhost:${PORT}`);
 });
