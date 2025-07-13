@@ -93,6 +93,17 @@ app.get('/', (req, res) => {
             <div id="status">Loading...</div>
             <button onclick="startAgent()">Start Agent</button>
             <button onclick="stopAgent()">Stop Agent</button>
+
+            <div style="margin-top: 15px; padding: 10px; background: #333; border-radius: 5px;">
+                <h4>🍯 Heartbeat Monitor</h4>
+                <p id="heartbeat-status">Monitoring: Off</p>
+                <button id="heartbeat-toggle" onclick="toggleHeartbeat()">Start Heartbeat</button>
+                <div style="margin-top: 10px; font-size: 12px; color: #888;">
+                    • Gentle tap every 3 seconds = Scanning<br>
+                    • Happy ping = Profit found<br>
+                    • Soft buzz = Needs attention
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -118,6 +129,63 @@ app.get('/', (req, res) => {
         </div>
 
         <script>
+            let isAgentRunning = false;
+            let isHeartbeatActive = false;
+            let heartbeatInterval = null;
+
+            // Create audio contexts for gentle sounds
+            const createBeep = (freq, duration, volume = 0.1) => {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(volume, audioCtx.currentTime + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + duration);
+            };
+
+            const playHeartbeat = () => createBeep(220, 0.1, 0.05); // Gentle low tone
+            const playPing = () => createBeep(800, 0.2, 0.1); // Happy success
+            const playError = () => createBeep(150, 0.3, 0.08); // Soft warning
+
+            function toggleHeartbeat() {
+                const button = document.getElementById('heartbeat-toggle');
+                const status = document.getElementById('heartbeat-status');
+
+                if (!isHeartbeatActive) {
+                    isHeartbeatActive = true;
+                    button.textContent = 'Stop Heartbeat';
+                    status.textContent = 'Monitoring: 💓 Active';
+
+                    heartbeatInterval = setInterval(() => {
+                        playHeartbeat();
+                        console.log('🍯 LullaByte heartbeat - gentle monitoring');
+                    }, 3000);
+
+                    console.log('🍯 LullaByte heartbeat monitor started');
+                } else {
+                    isHeartbeatActive = false;
+                    button.textContent = 'Start Heartbeat';
+                    status.textContent = 'Monitoring: Off';
+
+                    if (heartbeatInterval) {
+                        clearInterval(heartbeatInterval);
+                        heartbeatInterval = null;
+                    }
+
+                    console.log('🍯 LullaByte heartbeat monitor stopped');
+                }
+            }
+
             async function fetchStatus() {
                 try {
                     const response = await fetch('/api/status');
@@ -138,11 +206,19 @@ app.get('/', (req, res) => {
                     if (data.length === 0) {
                         html = 'No opportunities found';
                     } else {
-                        data.slice(0, 3).forEach(opp => {
-                            html += '<div>💰 ' + opp.pairs.join('/') + ' - <span class="profit">$' + opp.profit.toFixed(2) + '</span></div>';
-                        });
+                    const opportunities = await response.json();
+
+                    // Play gentle ping if new profitable opportunities found
+                    if (opportunities.length > 0 && isHeartbeatActive) {
+                        playPing();
+                        console.log('🍯 LullaByte found sweet opportunities!');
                     }
-                    document.getElementById('opportunities').innerHTML = html;
+
+                    document.getElementById('opportunities').innerHTML = 
+                        opportunities.map(op => 
+                            `<div>💰 ${op.pairs.join('/')} - $${op.profit} profit (${Math.round(op.confidence * 100)}% confidence)</div>`
+                        ).join('');
+                }
                 } catch (error) {
                     document.getElementById('opportunities').innerHTML = '<span class="error">Error: ' + error.message + '</span>';
                 }
