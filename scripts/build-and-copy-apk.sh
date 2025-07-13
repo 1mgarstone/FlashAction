@@ -1,31 +1,34 @@
-
 #!/bin/bash
 
-echo "🚀 Building React Native APK"
-echo "============================="
+echo "🚀 Building APK for Arbitrage Trading Mobile App"
+echo "=============================================="
 
 # Set variables
 PROJECT_ROOT="$(pwd)"
+KEYSTORE_PATH="$PROJECT_ROOT/android/app/my-release-key.keystore"
+KEYSTORE_ALIAS="my-key-alias"
+KEYSTORE_PASSWORD="123456"
 APK_NAME="arbitrage-trading-mobile.apk"
-KEYSTORE_PATH="android/app/release.keystore"
-KEYSTORE_ALIAS="release-key"
-KEYSTORE_PASSWORD="Kx9mP2vN8qL5wE3rT7yU4iO6"
 
-# Create Android project structure if missing
-echo "📁 Setting up Android project structure..."
+# Create keystore if it doesn't exist
+echo "🔑 Creating keystore..."
+if [ ! -f "$KEYSTORE_PATH" ]; then
+    keytool -genkeypair -v -storetype PKCS12 -keystore "$KEYSTORE_PATH" -alias "$KEYSTORE_ALIAS" -keyalg RSA -keysize 2048 -validity 10000 -storepass "$KEYSTORE_PASSWORD" -keypass "$KEYSTORE_PASSWORD" -dname "CN=Arbitrage Trading, OU=Mobile, O=ArbitrageTrading, L=City, ST=State, C=US"
+fi
+
+# Install dependencies
+echo "📦 Installing dependencies..."
+npm install
+
+# Create Android build directory structure
+echo "📁 Creating Android build structure..."
 mkdir -p android/app/src/main/java/com/arbitragetrading/mobile
 mkdir -p android/app/src/main/res/values
-mkdir -p android/app/src/main/res/mipmap-hdpi
-mkdir -p android/app/src/main/res/mipmap-mdpi
-mkdir -p android/app/src/main/res/mipmap-xhdpi
-mkdir -p android/app/src/main/res/mipmap-xxhdpi
-mkdir -p android/app/src/main/res/mipmap-xxxhdpi
 
-# Create AndroidManifest.xml
+# Create required Android files
+echo "📄 Creating Android manifest..."
 cat > android/app/src/main/AndroidManifest.xml << 'EOF'
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.arbitragetrading.mobile">
-
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -36,14 +39,13 @@ cat > android/app/src/main/AndroidManifest.xml << 'EOF'
         android:roundIcon="@mipmap/ic_launcher_round"
         android:allowBackup="false"
         android:theme="@style/AppTheme">
-        
+
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
-            android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/LaunchTheme">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -53,24 +55,7 @@ cat > android/app/src/main/AndroidManifest.xml << 'EOF'
 </manifest>
 EOF
 
-# Create strings.xml
-cat > android/app/src/main/res/values/strings.xml << 'EOF'
-<resources>
-    <string name="app_name">Arbitrage Trading</string>
-</resources>
-EOF
-
-# Create styles.xml
-cat > android/app/src/main/res/values/styles.xml << 'EOF'
-<resources>
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Customize your theme here. -->
-        <item name="android:textColor">#000000</item>
-    </style>
-</resources>
-EOF
-
-# Create MainActivity.java
+# Create MainActivity
 cat > android/app/src/main/java/com/arbitragetrading/mobile/MainActivity.java << 'EOF'
 package com.arbitragetrading.mobile;
 
@@ -84,7 +69,7 @@ public class MainActivity extends ReactActivity {
 }
 EOF
 
-# Create MainApplication.java
+# Create MainApplication
 cat > android/app/src/main/java/com/arbitragetrading/mobile/MainApplication.java << 'EOF'
 package com.arbitragetrading.mobile;
 
@@ -99,7 +84,6 @@ import com.facebook.soloader.SoLoader;
 import java.util.List;
 
 public class MainApplication extends Application implements ReactApplication {
-
   private final ReactNativeHost mReactNativeHost =
       new DefaultReactNativeHost(this) {
         @Override
@@ -118,16 +102,6 @@ public class MainApplication extends Application implements ReactApplication {
         protected String getJSMainModuleName() {
           return "index";
         }
-
-        @Override
-        protected boolean isNewArchEnabled() {
-          return BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
-        }
-
-        @Override
-        protected Boolean isHermesEnabled() {
-          return BuildConfig.IS_HERMES_ENABLED;
-        }
       };
 
   @Override
@@ -138,54 +112,46 @@ public class MainApplication extends Application implements ReactApplication {
   @Override
   public void onCreate() {
     super.onCreate();
-    SoLoader.init(this, /* native exopackage */ false);
+    SoLoader.init(this, false);
   }
 }
 EOF
 
-# Create gradle.properties
-cat > android/gradle.properties << 'EOF'
-org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
-android.useAndroidX=true
-android.enableJetifier=true
-newArchEnabled=false
-hermesEnabled=true
-FLIPPER_VERSION=0.125.0
+# Create strings.xml
+cat > android/app/src/main/res/values/strings.xml << 'EOF'
+<resources>
+    <string name="app_name">Arbitrage Trading</string>
+</resources>
 EOF
 
-# Create keystore
-echo "🔑 Creating keystore..."
-if [ ! -f "$KEYSTORE_PATH" ]; then
-    keytool -genkeypair -v -storetype PKCS12 -keystore "$KEYSTORE_PATH" -alias "$KEYSTORE_ALIAS" -keyalg RSA -keysize 2048 -validity 10000 -storepass "$KEYSTORE_PASSWORD" -keypass "$KEYSTORE_PASSWORD" -dname "CN=Arbitrage Trading, OU=Mobile, O=ArbitrageTrading, L=City, ST=State, C=US"
-fi
-
-# Install dependencies
-echo "📦 Installing dependencies..."
-npm install
+# Create styles.xml
+cat > android/app/src/main/res/values/styles.xml << 'EOF'
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    </style>
+    <style name="LaunchTheme" parent="AppTheme">
+    </style>
+</resources>
+EOF
 
 # Build the APK
 echo "🔨 Building APK..."
 cd android
+chmod +x gradlew
+./gradlew clean
 ./gradlew assembleRelease
 
 # Check if APK was built successfully
 if [ -f "app/build/outputs/apk/release/app-release.apk" ]; then
     echo "✅ APK built successfully!"
-    
+
     # Copy APK to root directory
     echo "📱 Copying APK to root directory..."
     cp "app/build/outputs/apk/release/app-release.apk" "$PROJECT_ROOT/$APK_NAME"
-    
-    echo "✅ APK ready: $APK_NAME"
-    echo "📱 File size: $(ls -lh "$PROJECT_ROOT/$APK_NAME" | awk '{print $5}')"
-    echo ""
-    echo "🎯 To download:"
-    echo "   1. Look for '$APK_NAME' in the file explorer"
-    echo "   2. Right-click and select 'Download'"
-    echo ""
+
+    echo "📱 APK copied to: $PROJECT_ROOT/$APK_NAME"
+    echo "🎉 Build complete! You can now download: $APK_NAME"
 else
-    echo "❌ APK build failed!"
-    echo "Build output:"
-    find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
+    echo "❌ APK build failed - app-release.apk not found"
     exit 1
 fi
