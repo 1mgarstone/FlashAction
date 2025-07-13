@@ -1,6 +1,4 @@
 
-#!/usr/bin/env node
-
 /**
  * Unified Arbitrage Trading Agent
  * Consolidates all trading components into a single intelligent platform
