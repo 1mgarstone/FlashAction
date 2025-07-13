@@ -164,3 +164,11 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node simple-server.js"
+
+[[ports]]
+localPort = 5000
+externalPort = 9000
+
+[[ports]]
+localPort = 8080
+externalPort = 5000
