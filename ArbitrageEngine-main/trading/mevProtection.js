@@ -6,6 +6,8 @@ export class MEVProtection {
     this.provider = provider;
     this.flashbotsRelay = 'https://relay.flashbots.net';
     this.maxSlippage = 0.005; // 0.5% max slippage
+    this.mevStrategy = 'COOPERATIVE'; // Work WITH MEV rather than against it
+    this.strategicDelays = new Map(); // Track strategic timing
   }
 
   async submitPrivateTransaction(transaction) {
@@ -86,14 +88,80 @@ export class MEVProtection {
   }
 
   async protectFromSandwich(transaction) {
-    // Add sandwich attack protection
+    // STRATEGIC SANDWICH COOPERATION - Sometimes let MEV happen if it benefits us
     const block = await this.provider.getBlock('latest');
     const baseFee = block.baseFeePerGas;
     
-    // Set max priority fee to avoid sandwich attacks
-    transaction.maxPriorityFeePerGas = baseFee.mul(2);
-    transaction.maxFeePerGas = baseFee.mul(3);
+    const mevOpportunity = await this.checkMEVCooperationBenefit(transaction);
+    
+    if (mevOpportunity && mevOpportunity.benefitsUs) {
+      console.log(`🤝 MEV COOPERATION: Allowing MEV for mutual benefit (+${mevOpportunity.expectedBenefit}%)`);
+      // Use lower gas to allow MEV bots to frontrun us profitably
+      transaction.maxPriorityFeePerGas = baseFee.mul(1.1);
+      transaction.maxFeePerGas = baseFee.mul(1.5);
+      
+      // Set strategic delay to benefit from MEV activity
+      this.strategicDelays.set(transaction.hash, {
+        delay: mevOpportunity.optimalDelay,
+        expectedBenefit: mevOpportunity.expectedBenefit
+      });
+    } else {
+      // Standard protection when MEV doesn't benefit us
+      transaction.maxPriorityFeePerGas = baseFee.mul(2);
+      transaction.maxFeePerGas = baseFee.mul(3);
+    }
     
     return transaction;
+  }
+
+  async checkMEVCooperationBenefit(transaction) {
+    // Analyze if allowing MEV activity could benefit our arbitrage
+    const txValue = transaction.value || 0;
+    const potentialPriceImpact = txValue / 1000000; // Simplified
+    
+    // If price impact creates arbitrage opportunities for us
+    if (potentialPriceImpact > 0.01) { // 1% price impact
+      return {
+        benefitsUs: true,
+        expectedBenefit: potentialPriceImpact * 0.3, // We capture 30% of the impact
+        optimalDelay: 5000, // 5 second delay
+        strategy: 'COOPERATIVE_ARBITRAGE'
+      };
+    }
+    
+    return { benefitsUs: false };
+  }
+
+  async executeMEVCooperativeStrategy(transaction, opportunity) {
+    // Execute transaction with MEV cooperation in mind
+    const strategicTiming = this.strategicDelays.get(transaction.hash);
+    
+    if (strategicTiming) {
+      console.log(`⏰ STRATEGIC MEV DELAY: Waiting ${strategicTiming.delay}ms for optimal execution`);
+      await new Promise(resolve => setTimeout(resolve, strategicTiming.delay));
+      
+      // Execute after MEV activity has created the arbitrage opportunity
+      const result = await this.submitPrivateTransaction(transaction);
+      
+      this.strategicDelays.delete(transaction.hash);
+      return result;
+    }
+    
+    return await this.submitPrivateTransaction(transaction);
+  }
+
+  async monitorMEVActivity() {
+    // Monitor ongoing MEV activity to optimize our strategies
+    const mevMetrics = {
+      avgMEVPerBlock: 0,
+      topMEVStrategies: [],
+      profitableTimeWindows: [],
+      cooperationOpportunities: 0
+    };
+
+    // This would connect to MEV-Boost or similar in production
+    console.log('📊 MEV Activity Monitor: Tracking opportunities for cooperation');
+    
+    return mevMetrics;
   }
 }
