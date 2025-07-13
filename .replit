@@ -22,7 +22,7 @@ NODE_ENV = "production"
 PORT = "5000"
 
 [workflows]
-runButton = "Agent Platform"
+runButton = "Mobile Development"
 
 [[workflows.workflow]]
 name = "Start Application"
@@ -138,3 +138,20 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd agent && npm install && node agent.js"
+
+[[workflows.workflow]]
+name = "Mobile Development"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x scripts/setup-mobile.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./scripts/setup-mobile.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm start"
