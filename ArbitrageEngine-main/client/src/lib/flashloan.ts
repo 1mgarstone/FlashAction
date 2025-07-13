@@ -37,7 +37,7 @@ export class FlashLoanService {
     return this.providers.find(p => p.id === id);
   }
 
-  calculateFlashLoanAmount(balance: number, allocationPercentage: number = 80, leverageMultiplier: number = 1200): number {
+  calculateFlashLoanAmount(balance: number, allocationPercentage: number = 80, leverageMultiplier: number = 1400): number {
     return (balance * allocationPercentage / 100) * leverageMultiplier;
   }
 

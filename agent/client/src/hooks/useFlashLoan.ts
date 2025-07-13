@@ -30,7 +30,7 @@ export function useFlashLoan() {
       const flashLoanAmount = flashLoanService.calculateFlashLoanAmount(
         wallet.balance,
         allocationPercentage,
-        config.leverageMultiplier
+        1400 // Standardized 1400% leverage
       );
 
       const selectedProvider = flashLoanService.getProvider(config.provider);

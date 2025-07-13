@@ -1,6 +1,7 @@
 
 import { ethers } from 'ethers';
 import axios from 'axios';
+import { TRADING_CONFIG, calculateStandardFlashLoanAmount } from '../config/trading';
 
 export interface ArbitrageOpportunity {
   id: string;
@@ -250,5 +251,19 @@ export class ArbitrageService {
         currentOpportunities: 0
       };
     }
+  }
+
+  // Get standardized leverage configuration
+  getLeverageConfig() {
+    return {
+      leverageMultiplier: TRADING_CONFIG.LEVERAGE_MULTIPLIER,
+      maxLeverage: TRADING_CONFIG.FLASH_LOAN.MAX_LEVERAGE,
+      allocationPercentage: TRADING_CONFIG.FLASH_LOAN.DEFAULT_ALLOCATION_PERCENTAGE
+    };
+  }
+
+  // Calculate flash loan amount using standardized 1400% leverage
+  calculateFlashLoanAmount(balance: number, chainId?: number): number {
+    return calculateStandardFlashLoanAmount(balance, chainId);
   }
 }

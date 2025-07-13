@@ -90,7 +90,7 @@ export class RealTradingEngine {
 
   calculateFlashLoanAmount(balance) {
     const percentage = 0.8;
-    const leverageMultiplier = 1200;
+    const leverageMultiplier = 1400;
     return balance * percentage * leverageMultiplier;
   }
 

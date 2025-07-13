@@ -69,7 +69,7 @@ export interface FlashLoanConfig {
   amount: number;
   fee: number;
   availableCapital: number;
-  leverageMultiplier: number;
+  leverageMultiplier: number; // Default: 2000x (based on 0.05% fee = $50 per $100k)
 }
 
 export interface NetworkStatus {

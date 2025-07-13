@@ -11,7 +11,7 @@ export function useFlashLoan() {
     amount: 0,
     fee: 0,
     availableCapital: 0,
-    leverageMultiplier: 1200
+    leverageMultiplier: 1400
   });
 
   const [isExecuting, setIsExecuting] = useState(false);
