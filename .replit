@@ -302,3 +302,20 @@ args = "cd ArbitrageEngine-main && npm install"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd ArbitrageEngine-main && node scripts/geneticOptimizer.js"
+
+[[workflows.workflow]]
+name = "LullaByte Private APK Build"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x scripts/build-and-copy-apk.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./scripts/build-and-copy-apk.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🎯 LullaByte APK ready for private download!\""
