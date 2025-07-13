@@ -250,3 +250,24 @@ args = "cd ArbitrageEngine-main"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node --max-old-space-size=8192 --optimize-for-size scripts/ultraFastLauncher.js"
+
+[[workflows.workflow]]
+name = "Build APK for Trading App"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd android"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x ../scripts/build-and-copy-apk.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "../scripts/build-and-copy-apk.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🎯 APK built successfully and ready for download!\""

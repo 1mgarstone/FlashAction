@@ -27,19 +27,29 @@ class UltimateArbitrageEngine {
   async executeNitrousBlast(baseAmount = 100000, iterations = 10) {
     const results = [];
     let totalProfit = 0;
+    let compoundedAmount = baseAmount;
+
+    console.log(`🚀 INITIATING COMPOUND LEVERAGE STRATEGY - Starting with $${baseAmount}`);
 
     for (let i = 0; i < iterations; i++) {
       try {
-        const leveragedAmount = baseAmount * this.leverageMultiplier;
+        // COMPOUND STRATEGY: Use profits to increase next trade size
+        const leveragedAmount = compoundedAmount * this.leverageMultiplier;
         const opportunity = await this.findBestOpportunity(leveragedAmount);
 
         if (opportunity && opportunity.profitPercentage >= this.profitThreshold) {
           const result = await this.executeInstantTrade(opportunity);
           results.push(result);
           totalProfit += result.profit;
+          
+          // COMPOUND PROFITS: Add profit to next trade amount
+          if (result.profit > 0) {
+            compoundedAmount += (result.profit * 0.8); // Reinvest 80% of profits
+            console.log(`💰 COMPOUNDING: Next trade amount: $${compoundedAmount.toFixed(2)}`);
+          }
 
           if (result.profit > 1000) {
-            console.log(`🚀 MAJOR WIN: +$${result.profit}`);
+            console.log(`🚀 MAJOR WIN: +$${result.profit} | Total: $${totalProfit.toFixed(2)}`);
           }
         }
       } catch (error) {
