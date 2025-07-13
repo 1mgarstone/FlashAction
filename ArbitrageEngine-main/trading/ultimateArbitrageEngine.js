@@ -5,10 +5,10 @@ import { TransactionMonitor } from '../monitoring/transactionMonitor.js';
 
 export class UltimateArbitrageEngine {
   constructor() {
-    console.log('🚀 ULTIMATE MAXIMUM GAIN ENGINE ACTIVATED - 500HP NITROUS MODE! 🚀');
-    this.maxLeverageMultiplier = 500; // 500x leverage - MAXIMUM POWER
+    console.log('🚀 ULTIMATE MAXIMUM GAIN ENGINE ACTIVATED - 2000HP NITROUS MODE! 🚀');
+    this.maxLeverageMultiplier = 2000; // 2000x leverage - MAXIMUM DEVASTATION POWER
     this.riskTolerance = 0.99; // 99% risk tolerance - ALL IN OR NOTHING
-    this.minProfitThreshold = 0.0025; // 0.25% minimum profit (your 0.37% threshold)
+    this.minProfitThreshold = 0.0037; // 0.37% minimum profit threshold
     this.maxConcurrentTrades = 50; // Execute 50 trades simultaneously
     this.borrowMultiplier = 20; // Borrow 20x available balance
     this.nitousMode = true; // FULL SEND MODE
@@ -268,9 +268,9 @@ export class UltimateArbitrageEngine {
   }
 
   async getOptimalFlashLoanAmount(balance) {
-    // Use 80% of balance with 1200x leverage for maximum profit
+    // Use 80% of balance with 2000x leverage for MAXIMUM NUCLEAR PROFIT
     const baseAmount = balance * 0.8;
-    const leverageMultiplier = 1200;
+    const leverageMultiplier = 2000;
     return baseAmount * leverageMultiplier;
   }
 
@@ -289,7 +289,7 @@ export class UltimateArbitrageEngine {
       console.log(`💰 Available Balance: $${availableBalance}`);
       console.log(`🚀 Borrowed Amount: $${borrowAmount}`);
       console.log(`⚡ Total Trading Capital: $${totalTradingCapital}`);
-      console.log(`🔥 Leverage Multiplier: ${this.maxLeverageMultiplier}x`);
+      console.log(`🔥 Leverage Multiplier: ${this.maxLeverageMultiplier}x - NUCLEAR POWER!`);
 
       // AGGRESSIVE PROFIT CALCULATIONS (0.4% minimum spread)
       const profitPercentage = Math.random() * (0.015 - 0.004) + 0.004; // 0.4% to 1.5% profit
