@@ -1,74 +1,45 @@
-
 #!/bin/bash
 
-echo "🚀 Building APK and copying to root directory"
-echo "============================================="
+echo "🔥 Starting APK build process..."
 
-# Set variables
-PROJECT_ROOT=$(pwd)
-APK_NAME="arbitrage-trading-mobile.apk"
-
-# Check if we're in the project root
-if [ ! -f "package.json" ]; then
-    echo "❌ Error: Not in project root directory"
+# Check if we're in the right directory
+if [ ! -f "app.json" ]; then
+    echo "❌ app.json not found. Make sure you're in the project root."
     exit 1
 fi
 
-# Install dependencies if needed
-if [ ! -d "node_modules" ]; then
-    echo "📦 Installing dependencies..."
-    npm install
-fi
+# Install dependencies
+echo "📦 Installing dependencies..."
+npm install --legacy-peer-deps
 
-# Check if Android directory exists
-if [ ! -d "android" ]; then
-    echo "❌ Error: Android directory not found"
-    exit 1
-fi
+# Clear any cached builds
+echo "🧹 Clearing build cache..."
+npx expo r -c
+rm -rf .expo/
+rm -rf node_modules/.cache/
 
-# Navigate to Android directory
-cd android
+# Fix expo-dev-client plugin issue
+echo "🔧 Fixing expo-dev-client configuration..."
+npm uninstall expo-dev-client
+npm install expo-dev-client@latest --legacy-peer-deps
 
-# Clean previous builds
-echo "🧹 Cleaning previous builds..."
-./gradlew clean
+# Prebuild Android with clean slate
+echo "🏗️ Prebuild Android project..."
+npx expo prebuild --platform android --clean
 
-# Generate release keystore if not exists
-if [ ! -f "app/release.keystore" ]; then
-    echo "🔐 Creating release keystore..."
-    keytool -genkey -v -keystore app/release.keystore -alias release-key -keyalg RSA -keysize 2048 -validity 10000 -storepass android123 -keypass android123 -dname "CN=Arbitrage Trading, O=Mobile App, C=US"
-fi
+# Build APK using EAS Build
+echo "🚀 Building APK with EAS..."
+npx eas build --platform android --profile development --local
 
-# Build the APK
-echo "🔨 Building signed APK..."
-./gradlew assembleRelease
+# Copy APK to accessible location
+echo "📂 Copying APK to project root..."
+find . -name "*.apk" -exec cp {} ./arbitrage-trading.apk \; 2>/dev/null
 
-# Check if build was successful
-if [ -f "app/build/outputs/apk/release/app-release.apk" ]; then
-    echo "✅ Build successful!"
-    
-    # Copy APK to root directory
-    echo "📱 Copying APK to root directory..."
-    cp app/build/outputs/apk/release/app-release.apk "$PROJECT_ROOT/$APK_NAME"
-    
-    # Make executable
-    chmod +x "$PROJECT_ROOT/$APK_NAME"
-    
-    echo "📱 APK copied to: $PROJECT_ROOT/$APK_NAME"
-    echo ""
-    echo "🎯 APK is now available in the root directory!"
-    echo "File: $APK_NAME"
-    echo "Size: $(du -h "$PROJECT_ROOT/$APK_NAME" | cut -f1)"
-    echo ""
-    echo "📲 To install on your device:"
-    echo "1. Download the APK file from the root directory"
-    echo "2. Enable 'Install from Unknown Sources' on your Android device"
-    echo "3. Install the APK file"
-    
+if [ -f "./arbitrage-trading.apk" ]; then
+    echo "✅ APK build complete!"
+    echo "📱 APK saved as: arbitrage-trading.apk"
+    ls -la arbitrage-trading.apk
 else
-    echo "❌ Build failed! Check the logs above for errors."
-    exit 1
+    echo "⚠️ APK not found locally, check EAS build status"
+    npx eas build:list --limit=1
 fi
-
-echo ""
-echo "✅ Process completed successfully!"

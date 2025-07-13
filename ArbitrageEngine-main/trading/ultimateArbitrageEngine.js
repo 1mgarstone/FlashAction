@@ -50,11 +50,13 @@ class UltimateArbitrageEngine {
   async findBestOpportunity(amount) {
     const tokens = [
       { symbol: 'WETH', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' },
-      { symbol: 'USDC', address: '0xA0b86a33E6417aeb71' }
+      { symbol: 'USDC', address: '0xA0b86a33E6417aeb71' },
+      { symbol: 'USDT', address: '0xdAC17F958D2ee523a2206206994597C13D831ec7' },
+      { symbol: 'DAI', address: '0x6B175474E89094C44Da98b954EedeAC495271d0F' }
     ];
 
     let bestOpportunity = null;
-    let maxProfit = 0;
+    let maxNetProfit = 0;
 
     for (const tokenA of tokens) {
       for (const tokenB of tokens) {
@@ -84,13 +86,23 @@ class UltimateArbitrageEngine {
 
         if (profitPercentage >= this.profitThreshold) {
           const flashLoanFee = amount * 0.0009;
-          const profit = priceDiff - flashLoanFee - 15; // $15 gas estimate
+          
+          // 🔥 DYNAMIC GAS ESTIMATION - NO MORE FIXED $15!
+          const dynamicGasCost = await this.estimateRealGasCost(amount);
+          const slippageBuffer = amount * 0.002; // 0.2% slippage protection
+          
+          const grossProfit = priceDiff - flashLoanFee;
+          const netProfit = grossProfit - dynamicGasCost - slippageBuffer;
 
-          if (profit > maxProfit) {
-            maxProfit = profit;
+          // Only proceed if NET profit meets threshold
+          if (netProfit > maxNetProfit && netProfit > (amount * 0.005)) { // Minimum 0.5% net profit
+            maxNetProfit = netProfit;
             bestOpportunity = {
               tokenA, tokenB, buyDex: buyDex[0], sellDex: sellDex[0],
-              buyPrice, sellPrice, profit, profitPercentage,
+              buyPrice, sellPrice, 
+              grossProfit, netProfit,
+              estimatedGasCost: dynamicGasCost,
+              profitPercentage: (netProfit / amount) * 100,
               timestamp: Date.now()
             };
           }
@@ -101,26 +113,95 @@ class UltimateArbitrageEngine {
     return bestOpportunity;
   }
 
+  async estimateRealGasCost(amount) {
+    const gasPrice = await this.getCurrentGasPrice();
+    const complexityMultiplier = amount > 100000 ? 1.5 : 1.0; // Complex trades cost more gas
+    const baseGasLimit = 250000 * complexityMultiplier;
+    
+    const gasCostEth = (gasPrice * baseGasLimit) / 1000000000;
+    const gasCostUsd = gasCostEth * 3000; // ETH price assumption
+    
+    return Math.max(gasCostUsd, 8); // Minimum $8 gas cost
+  }
+
   async executeInstantTrade(opportunity) {
-    // Simplified execution - no complex validation for speed
     const startTime = Date.now();
 
     try {
-      // Simulate ultra-fast execution
-      await new Promise(resolve => setTimeout(resolve, 50)); // 50ms execution
+      // 🔥 ADVANCED GAS OPTIMIZATION
+      const gasOptimization = await this.optimizeGasUsage(opportunity);
+      
+      if (!gasOptimization.profitable) {
+        console.log(`⛽ Gas too expensive: $${gasOptimization.gasCost} vs profit $${opportunity.profit}`);
+        return { success: false, profit: 0, error: 'Gas cost exceeds profit' };
+      }
+
+      // Use optimized gas settings
+      const optimizedGasPrice = gasOptimization.optimalGasPrice;
+      const estimatedGasCost = gasOptimization.gasCost;
+      
+      console.log(`⚡ Optimized Gas: ${optimizedGasPrice} gwei (Cost: $${estimatedGasCost})`);
+
+      // Simulate ultra-fast execution with gas optimization
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       const executionTime = Date.now() - startTime;
-      const profit = opportunity.profit * (Math.random() * 0.4 + 0.8); // 80-120% of expected
+      const grossProfit = opportunity.profit * (Math.random() * 0.4 + 0.8);
+      const netProfit = grossProfit - estimatedGasCost;
 
       return {
         success: true,
-        profit: Math.round(profit * 100) / 100,
+        profit: Math.round(netProfit * 100) / 100,
+        gasUsed: gasOptimization.gasLimit,
+        gasCost: estimatedGasCost,
         executionTime,
         timestamp: Date.now()
       };
     } catch (error) {
       return { success: false, profit: 0, error: error.message };
     }
+  }
+
+  async optimizeGasUsage(opportunity) {
+    // Dynamic gas optimization based on network conditions
+    const currentGasPrice = await this.getCurrentGasPrice();
+    const networkCongestion = await this.getNetworkCongestion();
+    
+    // Calculate optimal gas price (10-30% above base fee)
+    let optimalGasPrice = currentGasPrice;
+    
+    if (networkCongestion < 0.3) {
+      optimalGasPrice = currentGasPrice * 1.1; // +10% during low congestion
+    } else if (networkCongestion < 0.7) {
+      optimalGasPrice = currentGasPrice * 1.2; // +20% during medium congestion
+    } else {
+      optimalGasPrice = currentGasPrice * 1.3; // +30% during high congestion
+    }
+
+    // Cap maximum gas price to prevent excessive costs
+    const maxGasPrice = 100; // 100 gwei maximum
+    optimalGasPrice = Math.min(optimalGasPrice, maxGasPrice);
+
+    const gasLimit = 300000; // Standard arbitrage gas limit
+    const gasCostEth = (optimalGasPrice * gasLimit) / 1000000000; // Convert to ETH
+    const gasCostUsd = gasCostEth * 3000; // Assume $3000 ETH price
+
+    return {
+      optimalGasPrice: Math.round(optimalGasPrice),
+      gasLimit,
+      gasCost: Math.round(gasCostUsd * 100) / 100,
+      profitable: gasCostUsd < (opportunity.profit * 0.8) // Gas must be <80% of profit
+    };
+  }
+
+  async getCurrentGasPrice() {
+    // Simulate current gas price (15-80 gwei range)
+    return Math.random() * 65 + 15;
+  }
+
+  async getNetworkCongestion() {
+    // Simulate network congestion (0-1 scale)
+    return Math.random();
   }
 
   async getPrice(dex, tokenA, tokenB, amount) {
