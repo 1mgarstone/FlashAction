@@ -9,7 +9,7 @@ export class BlockchainService {
   }
 
   private initializeProvider() {
-    const rpcUrl = import.meta.env.VITE_ETHEREUM_RPC_URL || 'https://mainnet.infura.io/v3/your-project-id';
+    const rpcUrl = import.meta.env.VITE_ALCHEMY_API_URL_MAINNET || 'https://eth-mainnet.g.alchemy.com/v2/FOsEA-jCQQcYpdml_zidjbx7UtvbItmj';
     this.provider = new ethers.JsonRpcProvider(rpcUrl);
   }
 

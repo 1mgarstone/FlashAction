@@ -7,10 +7,10 @@ import "@rainbow-me/rainbowkit/styles.css";
 
 const config = getDefaultConfig({
   appName: "ArbitrageEngine",
-  projectId: "demo", // you can use your own WalletConnect projectId if you want
+  projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || "033b97a193118dae919d9bf7cb5aeb13",
   chains: [mainnet, polygon],
   transports: {
-    [mainnet.id]: http(),
+    [mainnet.id]: http(import.meta.env.VITE_ALCHEMY_API_URL_MAINNET || "https://eth-mainnet.g.alchemy.com/v2/FOsEA-jCQQcYpdml_zidjbx7UtvbItmj"),
     [polygon.id]: http(),
   },
 });
