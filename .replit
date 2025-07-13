@@ -31,7 +31,7 @@ localPort = 5001
 externalPort = 5001
 
 [workflows]
-runButton = "Start Application"
+runButton = "Start App"
 
 [[workflows.workflow]]
 name = "Start Application"
@@ -129,3 +129,12 @@ mode = "sequential"
 task = "shell.exec"
 args = "node simple-server.js"
 waitForPort = 8080
+
+[[workflows.workflow]]
+name = "Start App"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm start"
