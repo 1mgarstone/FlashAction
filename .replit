@@ -289,3 +289,16 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node simple-server.js"
+
+[[workflows.workflow]]
+name = "🧬 LullaByte Genetic Evolution"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main && npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main && node scripts/geneticOptimizer.js"

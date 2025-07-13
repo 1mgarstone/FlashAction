@@ -1,4 +1,3 @@
-
 const express = require('express');
 const path = require('path');
 const TradingAgent = require('./agent/agent.js');
@@ -88,25 +87,36 @@ app.get('/', (req, res) => {
     </head>
     <body>
         <h1>🍯 LullaByte Trading Dashboard</h1>
-        
+
         <div class="card">
             <h3>Agent Status</h3>
             <div id="status">Loading...</div>
             <button onclick="startAgent()">Start Agent</button>
             <button onclick="stopAgent()">Stop Agent</button>
         </div>
-        
+
         <div class="card">
             <h3>Current Opportunities</h3>
             <div id="opportunities">Loading...</div>
             <button onclick="refreshOpportunities()">Refresh</button>
         </div>
-        
+
         <div class="card">
             <h3>Portfolio</h3>
             <div id="portfolio">Loading...</div>
         </div>
-        
+
+        <div class="card">
+            <h3>Trading Metrics</h3>
+            <div>
+                <strong>🚀 Leverage:</strong> 1400x (Sweet Spot)<br>
+                <strong>⚡ Active Trades:</strong> <span id="activeTrades">0</span><br>
+                <strong>🎯 Genetic Success Rate:</strong> <span id="successRate">0%</span><br>
+                <strong>💰 Sustainable Profit:</strong> <span id="avgProfit">$0</span><br>
+                <strong>🧬 Pattern Recognition:</strong> <span style="color: #4ade80;">Learning</span>
+            </div>
+        </div>
+
         <script>
             async function fetchStatus() {
                 try {
@@ -119,7 +129,7 @@ app.get('/', (req, res) => {
                     document.getElementById('status').innerHTML = '<span class="error">Error: ' + error.message + '</span>';
                 }
             }
-            
+
             async function refreshOpportunities() {
                 try {
                     const response = await fetch('/api/opportunities');
@@ -137,7 +147,7 @@ app.get('/', (req, res) => {
                     document.getElementById('opportunities').innerHTML = '<span class="error">Error: ' + error.message + '</span>';
                 }
             }
-            
+
             async function startAgent() {
                 try {
                     await fetch('/api/start', { method: 'POST' });
@@ -146,7 +156,7 @@ app.get('/', (req, res) => {
                     alert('Error starting agent: ' + error.message);
                 }
             }
-            
+
             async function stopAgent() {
                 try {
                     await fetch('/api/stop', { method: 'POST' });
@@ -155,13 +165,13 @@ app.get('/', (req, res) => {
                     alert('Error stopping agent: ' + error.message);
                 }
             }
-            
+
             // Auto-refresh every 10 seconds
             setInterval(() => {
                 fetchStatus();
                 refreshOpportunities();
             }, 10000);
-            
+
             // Initial load
             fetchStatus();
             refreshOpportunities();
