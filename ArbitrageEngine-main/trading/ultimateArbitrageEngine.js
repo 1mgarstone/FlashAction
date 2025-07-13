@@ -2,11 +2,17 @@ const { ethers } = require('ethers');
 
 class UltimateArbitrageEngine {
   constructor() {
-    this.profitThreshold = 0.37; // 0.37% minimum
-    this.leverageMultiplier = 2000; // 2000x NITROUS MODE
+    this.profitThreshold = 0.25; // 0.25% minimum - More opportunities
+    this.leverageMultiplier = 1400; // 1400x LULLABYTE SWEET SPOT
     this.isActive = false;
-    this.maxConcurrentTrades = 50;
+    this.maxConcurrentTrades = 100; // Increased capacity
     this.gasOptimization = true;
+    
+    // GENETIC PROFIT ACCUMULATION ENGINE
+    this.sustainabilityMode = true;
+    this.compoundingRate = 0.85; // 85% profit reinvestment
+    this.riskDiversification = true;
+    this.adaptiveLearning = true;
 
     // Core DEXes only - stripped down for speed
     this.dexes = [
@@ -24,12 +30,15 @@ class UltimateArbitrageEngine {
     this.crossChainEnabled = false; // Disabled for maximum efficiency
   }
 
-  async executeNitrousBlast(baseAmount = 100000, iterations = 10) {
+  async executeLullaByteSustainableGrowth(baseAmount = 100000, iterations = 50) {
     const results = [];
     let totalProfit = 0;
     let compoundedAmount = baseAmount;
+    let geneticMemory = new Map(); // Learn from successful patterns
 
-    console.log(`🚀 INITIATING COMPOUND LEVERAGE STRATEGY - Starting with $${baseAmount}`);
+    console.log(`🍯 LULLABYTE GENETIC GROWTH INITIATED - Starting with $${baseAmount}`);
+    console.log(`🧬 Sustainable Mode: ${this.sustainabilityMode ? 'ACTIVE' : 'INACTIVE'}`);
+    console.log(`📈 Target: Future-Reliant Income Stream`);
 
     for (let i = 0; i < iterations; i++) {
       try {
@@ -42,10 +51,19 @@ class UltimateArbitrageEngine {
           results.push(result);
           totalProfit += result.profit;
           
-          // COMPOUND PROFITS: Add profit to next trade amount
+          // GENETIC PROFIT ACCUMULATION
           if (result.profit > 0) {
-            compoundedAmount += (result.profit * 0.8); // Reinvest 80% of profits
-            console.log(`💰 COMPOUNDING: Next trade amount: $${compoundedAmount.toFixed(2)}`);
+            // Store successful pattern in genetic memory
+            const pattern = `${opportunity.tokenA.symbol}-${opportunity.tokenB.symbol}-${opportunity.buyDex}-${opportunity.sellDex}`;
+            geneticMemory.set(pattern, (geneticMemory.get(pattern) || 0) + 1);
+            
+            // Sustainable compounding with risk management
+            const sustainableReinvestment = result.profit * this.compoundingRate;
+            compoundedAmount += sustainableReinvestment;
+            
+            console.log(`🍯 GENETIC LEARNING: Pattern ${pattern} success count: ${geneticMemory.get(pattern)}`);
+            console.log(`💰 SUSTAINABLE GROWTH: Next trade amount: $${compoundedAmount.toFixed(2)}`);
+            console.log(`🧬 Profit DNA: $${(result.profit - sustainableReinvestment).toFixed(2)} preserved for future`);
           }
 
           if (result.profit > 1000) {
