@@ -1,0 +1,58 @@
+
+{
+  "name": "trading-agent-platform",
+  "version": "2.0.0",
+  "description": "Unified Arbitrage Trading Agent Platform",
+  "main": "agent.js",
+  "type": "module",
+  "scripts": {
+    "start": "node agent.js",
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "nodemon agent.js",
+    "client:dev": "cd client && npm run dev",
+    "build": "npm run client:build && npm run server:build",
+    "client:build": "cd client && npm run build",
+    "server:build": "echo 'Server build complete'",
+    "setup": "npm install && cd client && npm install",
+    "maxgain": "node trading/ultimateArbitrageEngine.js",
+    "audit": "node scripts/auditAndDebug.js",
+    "monitor": "node monitoring/transactionMonitor.js",
+    "deploy": "npm run build && node agent.js"
+  },
+  "keywords": [
+    "arbitrage",
+    "trading",
+    "defi",
+    "flashloan",
+    "ethereum",
+    "agent",
+    "automation"
+  ],
+  "author": "Trading Agent Platform",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "ethers": "^6.7.1",
+    "web3": "^4.1.1",
+    "axios": "^1.5.0",
+    "ws": "^8.13.0",
+    "node-cron": "^3.0.2",
+    "lodash": "^4.17.21",
+    "big.js": "^6.2.1",
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.3",
+    "inquirer": "^9.2.10",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "concurrently": "^8.2.0",
+    "@types/node": "^20.5.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
