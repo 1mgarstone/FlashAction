@@ -1,0 +1,37 @@
+🚀 Building APK for Arbitrage Trading Mobile App
+==============================================
+🔑 Creating keystore...
+./scripts/build-and-copy-apk.sh: line 16: keytool: command not found
+📦 Installing dependencies...
+npm error code ERESOLVE
+npm error ERESOLVE unable to resolve dependency tree
+npm error
+npm error While resolving: arbitrage-trading-mobile@1.0.0
+npm error Found: react@18.2.0
+npm error node_modules/react
+npm error   react@"18.2.0" from the root project
+npm error   peer react@"^18.0.0" from react-native-web@0.19.13
+npm error   node_modules/react-native-web
+npm error     react-native-web@"~0.19.10" from the root project
+npm error
+npm error Could not resolve dependency:
+npm error peer react@"^18.3.1" from react-dom@18.3.1
+npm error node_modules/react-dom
+npm error   peer react-dom@"^18.0.0" from react-native-web@0.19.13
+npm error   node_modules/react-native-web
+npm error     react-native-web@"~0.19.10" from the root project
+npm error
+npm error Fix the upstream dependency conflict, or retry
+npm error this command with --force or --legacy-peer-deps
+npm error to accept an incorrect (and potentially broken) dependency resolution.
+npm error
+npm error
+npm error For a full report see:
+npm error /home/runner/.npm/_logs/2025-07-13T15_19_06_507Z-eresolve-report.txt
+npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2025-07-13T15_19_06_507Z-debug-0.log
+📁 Creating Android build structure...
+📄 Creating Android manifest...
+🔨 Building APK...
+./gradlew: line 9: exec: : not found
+./gradlew: line 9: exec: : not found
+❌ APK build failed - app-release.apk not found
