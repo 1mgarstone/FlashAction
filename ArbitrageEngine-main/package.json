@@ -5,8 +5,9 @@
   "main": "scripts/ultimateBot.js",
   "type": "module",
   "scripts": {
-    "start": "node scripts/ultimateBot.js",
     "dev": "node --watch scripts/ultimateBot.js",
+    "start-real": "node scripts/quickStart.js",
+    "start": "node scripts/ultimateBot.js",
     "test": "node scripts/testBot.js",
     "deploy": "node contracts/deploy.js",
     "ultimate": "node scripts/ultimateBot.js",
