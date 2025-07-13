@@ -216,7 +216,7 @@ app.get('/', (req, res) => {
 
                     document.getElementById('opportunities').innerHTML = 
                         opportunities.map(op => 
-                            `<div>💰 ${op.pairs.join('/')} - $${op.profit} profit (${Math.round(op.confidence * 100)}% confidence)</div>`
+                            '<div>💰 ' + op.pairs.join('/') + ' - $' + op.profit + ' profit (' + Math.round(op.confidence * 100) + '% confidence)</div>'
                         ).join('');
                 }
                 } catch (error) {
