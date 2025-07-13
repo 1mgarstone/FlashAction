@@ -4,19 +4,23 @@
  * Consolidates all trading components into a single intelligent platform
  */
 
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Import all trading modules
-const RealTradingEngine = require('./trading/realTradingEngine.js');
-const UltimateArbitrageEngine = require('./trading/ultimateArbitrageEngine.js');
-const FlashLoanExecutor = require('./trading/flashLoanExecutor.js');
-const PriceOracle = require('./trading/priceOracle.js');
-const RiskManager = require('./trading/riskManager.js');
-const MultiChainArbitrage = require('./trading/multiChainArbitrage.js');
-const TransactionMonitor = require('./monitoring/transactionMonitor.js');
+import RealTradingEngine from './trading/realTradingEngine.js';
+import UltimateArbitrageEngine from './trading/ultimateArbitrageEngine.js';
+import FlashLoanExecutor from './trading/flashLoanExecutor.js';
+import PriceOracle from './trading/priceOracle.js';
+import RiskManager from './trading/riskManager.js';
+import MultiChainArbitrage from './trading/multiChainArbitrage.js';
+import TransactionMonitor from './monitoring/transactionMonitor.js';
 
 class TradingAgent {
   constructor() {
@@ -306,4 +310,4 @@ class TradingAgent {
 const agent = new TradingAgent();
 agent.start();
 
-module.exports = TradingAgent;
+export default TradingAgent;

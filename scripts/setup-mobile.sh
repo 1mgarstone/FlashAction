@@ -54,3 +54,24 @@ echo "   npm start          - Start Expo development server"
 echo "   npm run android    - Start on Android device/emulator"
 echo "   npm run build:apk  - Build APK for distribution"
 echo ""
+#!/bin/bash
+
+echo "🔧 Setting up Mobile Development Environment..."
+
+# Install global dependencies
+echo "📦 Installing global dependencies..."
+npm install -g @expo/cli @expo/eas-cli
+
+# Install project dependencies
+echo "📦 Installing project dependencies..."
+npm install
+
+# Setup environment
+echo "⚙️ Setting up environment..."
+if [ ! -f .env ]; then
+    echo "EXPO_PUBLIC_API_URL=http://0.0.0.0:5000" > .env
+    echo "📝 Created .env file"
+fi
+
+echo "✅ Mobile development environment setup complete!"
+echo "🚀 Run 'npm start' to start the Expo development server"
