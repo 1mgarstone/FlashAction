@@ -305,3 +305,277 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 });
+import React, { useState } from 'react';
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import {
+  Card,
+  Title,
+  Text,
+  Switch,
+  List,
+  Button,
+  TextInput,
+  Divider,
+} from 'react-native-paper';
+import { useWeb3 } from '../providers/Web3Provider';
+import { showMessage } from 'react-native-flash-message';
+
+export default function SettingsScreen() {
+  const { isConnected, chainId, switchNetwork } = useWeb3();
+  const [notifications, setNotifications] = useState(true);
+  const [autoTrading, setAutoTrading] = useState(false);
+  const [slippageTolerance, setSlippageTolerance] = useState('0.5');
+  const [maxGasPrice, setMaxGasPrice] = useState('50');
+  const [minProfitThreshold, setMinProfitThreshold] = useState('10');
+
+  const handleNetworkSwitch = async (networkId: number) => {
+    try {
+      await switchNetwork(networkId);
+      showMessage({
+        message: 'Network Switched',
+        description: `Successfully switched to network ${networkId}`,
+        type: 'success',
+      });
+    } catch (error) {
+      showMessage({
+        message: 'Network Switch Failed',
+        description: 'Failed to switch network',
+        type: 'danger',
+      });
+    }
+  };
+
+  const handleExportData = () => {
+    Alert.alert(
+      'Export Data',
+      'This feature will export your trading history and settings.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Export', onPress: () => {
+          showMessage({
+            message: 'Export Started',
+            description: 'Your data export has been initiated',
+            type: 'info',
+          });
+        }},
+      ]
+    );
+  };
+
+  const handleClearCache = () => {
+    Alert.alert(
+      'Clear Cache',
+      'Are you sure you want to clear all cached data?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Clear', onPress: () => {
+          showMessage({
+            message: 'Cache Cleared',
+            description: 'All cached data has been cleared',
+            type: 'success',
+          });
+        }, style: 'destructive' },
+      ]
+    );
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      {/* Trading Settings */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title>Trading Settings</Title>
+          
+          <View style={styles.switchContainer}>
+            <Text>Enable Auto Trading</Text>
+            <Switch
+              value={autoTrading}
+              onValueChange={setAutoTrading}
+            />
+          </View>
+          
+          <Divider style={styles.divider} />
+          
+          <TextInput
+            label="Slippage Tolerance (%)"
+            value={slippageTolerance}
+            onChangeText={setSlippageTolerance}
+            mode="outlined"
+            style={styles.input}
+            keyboardType="numeric"
+          />
+          
+          <TextInput
+            label="Max Gas Price (Gwei)"
+            value={maxGasPrice}
+            onChangeText={setMaxGasPrice}
+            mode="outlined"
+            style={styles.input}
+            keyboardType="numeric"
+          />
+          
+          <TextInput
+            label="Min Profit Threshold ($)"
+            value={minProfitThreshold}
+            onChangeText={setMinProfitThreshold}
+            mode="outlined"
+            style={styles.input}
+            keyboardType="numeric"
+          />
+        </Card.Content>
+      </Card>
+
+      {/* Network Settings */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title>Network Settings</Title>
+          <Text style={styles.currentNetwork}>
+            Current Network: {chainId === 1 ? 'Ethereum Mainnet' : `Chain ID: ${chainId}`}
+          </Text>
+          
+          <View style={styles.networkButtons}>
+            <Button
+              mode={chainId === 1 ? 'contained' : 'outlined'}
+              onPress={() => handleNetworkSwitch(1)}
+              style={styles.networkButton}
+              disabled={!isConnected}
+            >
+              Mainnet
+            </Button>
+            <Button
+              mode={chainId === 137 ? 'contained' : 'outlined'}
+              onPress={() => handleNetworkSwitch(137)}
+              style={styles.networkButton}
+              disabled={!isConnected}
+            >
+              Polygon
+            </Button>
+          </View>
+          
+          <View style={styles.networkButtons}>
+            <Button
+              mode={chainId === 56 ? 'contained' : 'outlined'}
+              onPress={() => handleNetworkSwitch(56)}
+              style={styles.networkButton}
+              disabled={!isConnected}
+            >
+              BSC
+            </Button>
+            <Button
+              mode={chainId === 43114 ? 'contained' : 'outlined'}
+              onPress={() => handleNetworkSwitch(43114)}
+              style={styles.networkButton}
+              disabled={!isConnected}
+            >
+              Avalanche
+            </Button>
+          </View>
+        </Card.Content>
+      </Card>
+
+      {/* Notifications */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title>Notifications</Title>
+          <View style={styles.switchContainer}>
+            <Text>Push Notifications</Text>
+            <Switch
+              value={notifications}
+              onValueChange={setNotifications}
+            />
+          </View>
+        </Card.Content>
+      </Card>
+
+      {/* App Settings */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title>App Settings</Title>
+          
+          <List.Item
+            title="Export Trading Data"
+            description="Download your trading history"
+            left={props => <List.Icon {...props} icon="download" />}
+            onPress={handleExportData}
+          />
+          
+          <List.Item
+            title="Clear Cache"
+            description="Clear all cached data"
+            left={props => <List.Icon {...props} icon="delete" />}
+            onPress={handleClearCache}
+          />
+          
+          <List.Item
+            title="Privacy Policy"
+            description="View our privacy policy"
+            left={props => <List.Icon {...props} icon="shield-account" />}
+            right={props => <List.Icon {...props} icon="chevron-right" />}
+          />
+          
+          <List.Item
+            title="Terms of Service"
+            description="View terms and conditions"
+            left={props => <List.Icon {...props} icon="file-document" />}
+            right={props => <List.Icon {...props} icon="chevron-right" />}
+          />
+        </Card.Content>
+      </Card>
+
+      {/* App Info */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title>App Information</Title>
+          <Text style={styles.infoText}>Version: 1.0.0</Text>
+          <Text style={styles.infoText}>Build: 2024.01.01</Text>
+          <Text style={styles.infoText}>© 2024 Arbitrage Trading Team</Text>
+        </Card.Content>
+      </Card>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+  },
+  card: {
+    marginBottom: 16,
+    elevation: 4,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  divider: {
+    marginVertical: 12,
+  },
+  input: {
+    marginBottom: 12,
+  },
+  currentNetwork: {
+    marginBottom: 16,
+    color: '#666',
+  },
+  networkButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  networkButton: {
+    flex: 0.48,
+  },
+  infoText: {
+    color: '#666',
+    marginBottom: 4,
+  },
+});

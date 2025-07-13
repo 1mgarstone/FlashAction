@@ -158,3 +158,97 @@ export class ArbitrageService {
     }
   }
 }
+export interface ArbitrageOpportunity {
+  id: string;
+  tokenPair: string;
+  exchange1: string;
+  exchange2: string;
+  price1: number;
+  price2: number;
+  profit: number;
+  profitPercentage: number;
+  gasEstimate: number;
+}
+
+export interface DashboardStats {
+  totalProfit: number;
+  totalTrades: number;
+  successRate: number;
+  currentOpportunities: number;
+}
+
+export class ArbitrageService {
+  async findOpportunities(): Promise<ArbitrageOpportunity[]> {
+    try {
+      // Simulate finding arbitrage opportunities
+      return [
+        {
+          id: "1",
+          tokenPair: "ETH/USDC",
+          exchange1: "Uniswap",
+          exchange2: "SushiSwap",
+          price1: 2100.50,
+          price2: 2145.30,
+          profit: 44.80,
+          profitPercentage: 2.13,
+          gasEstimate: 12.50
+        },
+        {
+          id: "2",
+          tokenPair: "WBTC/USDT",
+          exchange1: "Balancer",
+          exchange2: "Curve",
+          price1: 42500.25,
+          price2: 42580.75,
+          profit: 80.50,
+          profitPercentage: 1.89,
+          gasEstimate: 18.75
+        }
+      ];
+    } catch (error) {
+      console.error('Error finding opportunities:', error);
+      return [];
+    }
+  }
+
+  async executeArbitrage(opportunity: ArbitrageOpportunity, signer: any): Promise<{ success: boolean; profit?: number; error?: string }> {
+    try {
+      // Simulate arbitrage execution
+      console.log('Executing arbitrage for:', opportunity.tokenPair);
+      
+      // Add actual execution logic here
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      return {
+        success: true,
+        profit: opportunity.profit
+      };
+    } catch (error) {
+      console.error('Error executing arbitrage:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  async getDashboardStats(): Promise<DashboardStats> {
+    try {
+      // Simulate dashboard statistics
+      return {
+        totalProfit: 1234.56,
+        totalTrades: 45,
+        successRate: 87.5,
+        currentOpportunities: 8
+      };
+    } catch (error) {
+      console.error('Error getting dashboard stats:', error);
+      return {
+        totalProfit: 0,
+        totalTrades: 0,
+        successRate: 0,
+        currentOpportunities: 0
+      };
+    }
+  }
+}

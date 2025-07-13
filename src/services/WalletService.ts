@@ -152,3 +152,65 @@ export class WalletService {
     }
   }
 }
+export interface TokenBalance {
+  symbol: string;
+  balance: string;
+  value: number;
+  icon: string;
+}
+
+export class WalletService {
+  async getEthBalance(address: string): Promise<string> {
+    try {
+      // Simulate ETH balance - replace with actual API call
+      return "1.234";
+    } catch (error) {
+      console.error('Error getting ETH balance:', error);
+      return "0";
+    }
+  }
+
+  async getTokenBalances(address: string): Promise<TokenBalance[]> {
+    try {
+      // Simulate token balances - replace with actual API calls
+      return [
+        {
+          symbol: "USDC",
+          balance: "1500.50",
+          value: 1500.50,
+          icon: "currency-usd"
+        },
+        {
+          symbol: "USDT",
+          balance: "800.25",
+          value: 800.25,
+          icon: "currency-usd"
+        },
+        {
+          symbol: "DAI",
+          balance: "300.75",
+          value: 300.75,
+          icon: "currency-usd"
+        }
+      ];
+    } catch (error) {
+      console.error('Error getting token balances:', error);
+      return [];
+    }
+  }
+
+  async getTotalValue(address: string): Promise<number> {
+    try {
+      const tokenBalances = await this.getTokenBalances(address);
+      const ethBalance = await this.getEthBalance(address);
+      
+      const tokenValue = tokenBalances.reduce((sum, token) => sum + token.value, 0);
+      const ethValue = parseFloat(ethBalance) * 2000; // Assume ETH price $2000
+      
+      return tokenValue + ethValue;
+    } catch (error) {
+      console.error('Error calculating total value:', error);
+      return 0;
+    }
+  }
+}

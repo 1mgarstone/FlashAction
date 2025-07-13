@@ -1,8 +1,8 @@
 
 import 'react-native-get-random-values';
 import 'text-encoding-polyfill';
-import { registerRootComponent } from 'expo';
+import { AppRegistry } from 'react-native';
 import App from './src/App';
 
 // Register the main component
-registerRootComponent(App);
+AppRegistry.registerComponent('ArbitrageTradingMobile', () => App);
