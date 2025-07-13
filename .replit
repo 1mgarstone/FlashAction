@@ -142,3 +142,20 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm start"
+
+[[workflows.workflow]]
+name = "Build and Deploy APK"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x scripts/build-and-copy-apk.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./scripts/build-and-copy-apk.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"✅ APK ready for download!\""
