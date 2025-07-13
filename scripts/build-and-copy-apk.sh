@@ -29,12 +29,18 @@ fi
 # Navigate to Android directory
 cd android
 
+# Generate release keystore if not exists
+if [ ! -f "app/release.keystore" ]; then
+    echo "🔐 Creating release keystore..."
+    keytool -genkey -v -keystore app/release.keystore -alias release-key -keyalg RSA -keysize 2048 -validity 10000 -storepass "Kx9mP2vN8qL5wE3rT7yU4iO6" -keypass "Kx9mP2vN8qL5wE3rT7yU4iO6" -dname "CN=MGProduct, OU=Development, O=Arbitrage Trading, L=San Francisco, S=CA, C=US"
+fi
+
 # Clean previous builds
 echo "🧹 Cleaning previous builds..."
 ./gradlew clean
 
 # Build the APK
-echo "🔨 Building APK..."
+echo "🔨 Building signed APK..."
 ./gradlew assembleRelease
 
 # Check if build was successful
