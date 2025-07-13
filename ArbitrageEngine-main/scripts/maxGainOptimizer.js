@@ -29,24 +29,62 @@ class MaxGainOptimizer {
   }
 
   calculateOptimalFlashLoanAmount(currentBalance, opportunity) {
-    // ENHANCED: Dynamic leverage based on market conditions and gas costs
+    // MAXIMUM LEVERAGE STRATEGY - 80% capital utilization per trade
     const gasPrice = this.getCurrentGasPrice();
     const networkCongestion = this.getNetworkCongestion();
 
-    // Reduce leverage during high gas periods
-    let dynamicLeverage = this.leverageMultiplier;
-    if (gasPrice > 50) dynamicLeverage *= 0.7; // Reduce 30% if gas > 50 gwei
-    if (networkCongestion > 0.8) dynamicLeverage *= 0.8; // Reduce 20% if network congested
+    // Base aggressive leverage - 80% of available capital
+    const baseCapitalUtilization = 0.8;
+    let dynamicLeverage = this.leverageMultiplier * baseCapitalUtilization;
+
+    // INTELLIGENT GAS COST ANALYSIS
+    const gasBreakpoints = {
+      low: 15,      // < 15 gwei - maximum aggression
+      medium: 40,   // 15-40 gwei - moderate scaling
+      high: 80,     // 40-80 gwei - conservative scaling
+      extreme: 120  // > 120 gwei - emergency mode
+    };
+
+    // COUNTER-INTUITIVE APPROACH: Higher gas = HIGHER leverage to offset costs
+    if (gasPrice > gasBreakpoints.extreme) {
+      dynamicLeverage *= 1.4; // 40% MORE leverage during extreme gas
+      console.log(`🔥 EXTREME GAS MODE: ${gasPrice} gwei - MAXIMUM LEVERAGE ENGAGED`);
+    } else if (gasPrice > gasBreakpoints.high) {
+      dynamicLeverage *= 1.25; // 25% more leverage during high gas
+      console.log(`⚡ HIGH GAS COMPENSATION: ${gasPrice} gwei - Increased leverage`);
+    } else if (gasPrice > gasBreakpoints.medium) {
+      dynamicLeverage *= 1.1; // 10% more leverage during medium gas
+    } else {
+      dynamicLeverage *= 1.0; // Standard leverage during low gas
+    }
+
+    // NETWORK CONGESTION BOOST (opposite of traditional logic)
+    if (networkCongestion > 0.8) {
+      dynamicLeverage *= 1.2; // 20% MORE during congestion
+      console.log(`🚫 NETWORK CONGESTION DETECTED - COMPENSATING WITH +20% LEVERAGE`);
+    }
 
     const baseAmount = currentBalance * dynamicLeverage;
     const maxSafeAmount = this.getMaxSafeLoanAmount(opportunity);
-    const optimalAmount = Math.min(baseAmount, maxSafeAmount);
+    
+    // AGGRESSIVE SIZING - Use 80% of maximum safe amount
+    const aggressiveAmount = maxSafeAmount * 0.8;
+    const optimalAmount = Math.min(baseAmount, aggressiveAmount);
 
-    // Ensure minimum profitability after all costs
+    // GAS COST BREAKEVEN ANALYSIS
     const estimatedGasCost = this.estimateGasCost(optimalAmount, gasPrice);
-    const minProfitableAmount = estimatedGasCost / (opportunity.profitPercentage / 100);
+    const profitAfterGas = (optimalAmount * opportunity.profitPercentage / 100) - estimatedGasCost;
+    
+    // If profit after gas is still positive, use maximum possible amount
+    if (profitAfterGas > 0) {
+      const maximumLeverageAmount = Math.min(baseAmount * 1.5, maxSafeAmount);
+      console.log(`💎 GAS-OPTIMIZED MAXIMUM: $${maximumLeverageAmount.toFixed(2)} (Gas: $${estimatedGasCost.toFixed(2)})`);
+      return maximumLeverageAmount;
+    }
 
-    return Math.max(optimalAmount, minProfitableAmount * 1.5); // 50% buffer above break-even
+    // Fallback: minimum profitable amount with 2x buffer
+    const minProfitableAmount = estimatedGasCost / (opportunity.profitPercentage / 100);
+    return Math.max(optimalAmount, minProfitableAmount * 2);
   }
 
   getMaxSafeLoanAmount(opportunity) {
@@ -63,8 +101,29 @@ class MaxGainOptimizer {
   }
 
   getCurrentGasPrice() {
-    // Simulate real gas price - in production, fetch from ethers provider
-    return 15 + (Math.random() * 60); // 15-75 gwei range
+    // Simulate realistic gas price patterns with time-based variations
+    const currentHour = new Date().getUTCHours();
+    let baseGas = 20; // Base gas price
+    
+    // Time-based gas price patterns (higher during US/EU trading hours)
+    if (currentHour >= 13 && currentHour <= 21) {
+      baseGas = 35; // US/EU trading hours
+    } else if (currentHour >= 1 && currentHour <= 6) {
+      baseGas = 45; // Asian trading hours overlap
+    }
+    
+    // Random volatility ±50%
+    const volatility = (Math.random() - 0.5) * baseGas;
+    const currentGas = Math.max(15, baseGas + volatility);
+    
+    // Occasional gas spikes (2% chance of extreme gas)
+    if (Math.random() < 0.02) {
+      const spikeGas = 150 + (Math.random() * 200); // 150-350 gwei spike
+      console.log(`🚨 GAS SPIKE DETECTED: ${spikeGas.toFixed(1)} gwei - MAXIMUM LEVERAGE PROTOCOL ENGAGED`);
+      return spikeGas;
+    }
+    
+    return currentGas;
   }
 
   getNetworkCongestion() {
@@ -73,10 +132,39 @@ class MaxGainOptimizer {
   }
 
   estimateGasCost(amount, gasPrice) {
-    // Enhanced gas estimation based on trade complexity
-    const baseGasLimit = amount > 1000000 ? 400000 : 250000; // Complex trades need more gas
-    const gasCostEth = (gasPrice * baseGasLimit) / 1000000000;
-    return gasCostEth * 3200; // ETH price assumption
+    // REALISTIC GAS ESTIMATION - Non-linear scaling
+    let baseGasLimit;
+    
+    // Gas usage doesn't scale linearly with amount
+    if (amount > 5000000) {
+      baseGasLimit = 450000; // $5M+ trades - maximum complexity
+    } else if (amount > 1000000) {
+      baseGasLimit = 380000; // $1M+ trades - high complexity
+    } else if (amount > 500000) {
+      baseGasLimit = 320000; // $500k+ trades - medium complexity
+    } else if (amount > 100000) {
+      baseGasLimit = 280000; // $100k+ trades - standard complexity
+    } else {
+      baseGasLimit = 250000; // Under $100k - basic complexity
+    }
+
+    // Flash loan complexity adds fixed overhead
+    const flashLoanOverhead = 75000; // Flash loan initialization
+    const arbitrageOverhead = 50000; // DEX interaction overhead
+    const totalGasLimit = baseGasLimit + flashLoanOverhead + arbitrageOverhead;
+
+    // Priority fee for faster execution during high gas periods
+    const priorityFee = gasPrice > 50 ? gasPrice * 0.1 : 2; // 10% priority or 2 gwei minimum
+    const effectiveGasPrice = gasPrice + priorityFee;
+
+    const gasCostEth = (effectiveGasPrice * totalGasLimit) / 1000000000;
+    const ethPrice = 3200; // Conservative ETH price
+    
+    const totalGasCost = gasCostEth * ethPrice;
+    
+    console.log(`⛽ Gas Analysis: ${amount.toLocaleString()} trade = ${totalGasLimit.toLocaleString()} gas @ ${effectiveGasPrice.toFixed(1)} gwei = $${totalGasCost.toFixed(2)}`);
+    
+    return totalGasCost;
   }
 
   getTokenLiquidity(tokenPair) {
