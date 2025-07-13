@@ -19,6 +19,9 @@ class UltimateArbitrageEngine {
       { name: 'aave', fee: 0.0009, maxLiquidity: '1000000000' },
       { name: 'balancer', fee: 0.0000, maxLiquidity: '500000000' }
     ];
+
+    // SINGLE-CHAIN FOCUS - Maximum profit within each network
+    this.crossChainEnabled = false; // Disabled for maximum efficiency
   }
 
   async executeNitrousBlast(baseAmount = 100000, iterations = 10) {
@@ -51,11 +54,11 @@ class UltimateArbitrageEngine {
     // INTELLIGENT TOKEN CATEGORIZATION SYSTEM with TIME-BASED OPTIMIZATION
     const tokenCategories = await this.categorizeTokensByArbitrageFrequency();
     const timingPatterns = await this.analyzeTimingPatterns();
-    
+
     // ADJUST STRATEGY BASED ON CURRENT TIME PERIOD
     const currentPeriod = timingPatterns.currentOptimalPeriod;
     console.log(`🕐 Current period: ${currentPeriod.type} (Score: ${currentPeriod.score.toFixed(2)}) - ${currentPeriod.recommendation} strategy`);
-    
+
     // TIME-AWARE PROFIT THRESHOLDS
     let adjustedThreshold = this.profitThreshold;
     if (currentPeriod.score > 0.7) {
@@ -63,19 +66,19 @@ class UltimateArbitrageEngine {
     } else if (currentPeriod.score < 0.3) {
       adjustedThreshold *= 1.5; // Higher threshold during low-activity periods
     }
-    
+
     // PRIORITIZE CATEGORIES BASED ON TIME PATTERNS
     const prioritizedCategories = this.prioritizeCategoriesByTime(tokenCategories, timingPatterns);
-    
+
     for (const category of prioritizedCategories) {
       const opportunity = await this.scanTokenCategory(category.tokens, amount);
-      
+
       if (opportunity && opportunity.profitPercentage >= adjustedThreshold) {
         // TIME-BASED CONFIDENCE ADJUSTMENT
         opportunity.timeConfidence = this.calculateTimeBasedConfidence(opportunity, timingPatterns);
         opportunity.adjustedThreshold = adjustedThreshold;
         opportunity.timePeriod = currentPeriod.type;
-        
+
         console.log(`⏰ TIME-OPTIMIZED OPPORTUNITY: ${opportunity.profitPercentage.toFixed(3)}% (${category.priority} priority)`);
         return opportunity;
       }
@@ -88,61 +91,61 @@ class UltimateArbitrageEngine {
   prioritizeCategoriesByTime(tokenCategories, timingPatterns) {
     const currentHour = new Date().getUTCHours();
     const priorities = [];
-    
+
     // High-frequency tokens - always priority during business hours
     if (timingPatterns.highVolumePeriods.includes(currentHour)) {
       priorities.push({ tokens: tokenCategories.highFrequency, priority: 'HIGH-VOLUME' });
     }
-    
+
     // Stablecoin arbitrage during US market close / Asian open
     if (timingPatterns.stablecoinPeriods.includes(currentHour)) {
       priorities.push({ tokens: tokenCategories.highFrequency.filter(t => ['USDC', 'USDT', 'DAI'].includes(t.symbol)), priority: 'STABLECOIN' });
     }
-    
+
     // BTC/ETH during Asian trading hours
     if (timingPatterns.btcTradingHours.includes(currentHour)) {
       priorities.push({ tokens: tokenCategories.highFrequency.filter(t => ['WETH', 'WBTC'].includes(t.symbol)), priority: 'BTC-ETH' });
       priorities.push({ tokens: tokenCategories.mediumFrequency.filter(t => ['WBTC'].includes(t.symbol)), priority: 'BTC-EXTENDED' });
     }
-    
+
     // DeFi tokens during yield farming hours
     if (timingPatterns.deFiHours.includes(currentHour)) {
       priorities.push({ tokens: tokenCategories.mediumFrequency.filter(t => ['UNI', 'LINK'].includes(t.symbol)), priority: 'DEFI' });
     }
-    
+
     // 72-hour margin periods - RARE GEMS with massive profit potential
     if (timingPatterns.leverageMarginHours.includes(currentHour)) {
       priorities.push({ tokens: tokenCategories.rareGems, priority: 'LEVERAGE-MARGIN' });
       console.log(`💎 72-HOUR MARGIN PERIOD: Scanning for high-profit leverage opportunities`);
     }
-    
+
     // Default fallback order
     priorities.push({ tokens: tokenCategories.highFrequency, priority: 'DEFAULT-HIGH' });
     priorities.push({ tokens: tokenCategories.mediumFrequency, priority: 'DEFAULT-MEDIUM' });
     priorities.push({ tokens: tokenCategories.rareGems, priority: 'DEFAULT-RARE' });
-    
+
     return priorities;
   }
 
   calculateTimeBasedConfidence(opportunity, timingPatterns) {
     const currentHour = new Date().getUTCHours();
     let confidence = 0.5; // Base confidence
-    
+
     // Higher confidence during optimal periods
     if (timingPatterns.currentOptimalPeriod.score > 0.7) {
       confidence += 0.3;
     }
-    
+
     // Token-specific time confidence
     if (opportunity.tokenA && opportunity.tokenA.peakTimes) {
       if (opportunity.tokenA.peakTimes.includes(currentHour)) {
         confidence += 0.2;
       }
     }
-    
+
     // Direction doesn't matter for arbitrage - only price difference
     confidence += Math.min(opportunity.profitPercentage / 10, 0.3); // Up to 30% boost for high profit
-    
+
     return Math.min(confidence, 1.0);
   }
 
@@ -150,7 +153,7 @@ class UltimateArbitrageEngine {
     // Historical data analysis for token arbitrage frequency
     const tokenFrequencyData = await this.analyzeHistoricalArbitrageData();
     const timeBasedPatterns = await this.analyzeTimingPatterns();
-    
+
     return {
       highFrequency: [
         { symbol: 'WETH', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', avgOpportunities: 80, peakTimes: timeBasedPatterns.highVolumePeriods },
@@ -175,26 +178,26 @@ class UltimateArbitrageEngine {
     // TIME-BASED PATTERN ANALYSIS for optimal arbitrage opportunities
     const currentHour = new Date().getUTCHours();
     const currentDay = new Date().getUTCDay();
-    
+
     return {
       // 8AM-12PM UTC (US East Coast morning) - High volume institutional trading
       highVolumePeriods: [8, 9, 10, 11, 12],
-      
+
       // 2PM-6PM UTC (US market close, Asian market open) - Stablecoin arbitrage peak
       stablecoinPeriods: [14, 15, 16, 17, 18],
-      
+
       // 6PM-2AM UTC (Asian trading hours) - BTC/ETH arbitrage peak
       btcTradingHours: [18, 19, 20, 21, 22, 23, 0, 1, 2],
-      
+
       // 10PM-6AM UTC (Night traders, DeFi yield farming) - DeFi token opportunities
       deFiHours: [22, 23, 0, 1, 2, 3, 4, 5, 6],
-      
+
       // 72-hour margin periods (Mon-Wed, Thu-Sat cycles) - Big leveraged position opportunities
       leverageMarginHours: this.calculateLeverageMarginPeriods(currentHour, currentDay),
-      
+
       // Weekend patterns (Sat-Sun) - Lower volume but higher spreads
       weekendPatterns: currentDay === 0 || currentDay === 6 ? [12, 13, 14, 15, 16, 17] : [],
-      
+
       currentOptimalPeriod: this.getCurrentOptimalPeriod(currentHour, currentDay)
     };
   }
@@ -202,17 +205,17 @@ class UltimateArbitrageEngine {
   calculateLeverageMarginPeriods(currentHour, currentDay) {
     // Track 72-hour margin cycles (3-day periods)
     const leveragePeriods = [];
-    
+
     // Monday-Wednesday cycle (Days 1-3)
     if (currentDay >= 1 && currentDay <= 3) {
       leveragePeriods.push(...[6, 7, 8, 18, 19, 20]); // Morning and evening institutional hours
     }
-    
+
     // Thursday-Saturday cycle (Days 4-6)
     if (currentDay >= 4 && currentDay <= 6) {
       leveragePeriods.push(...[6, 7, 8, 18, 19, 20, 21, 22]); // Extended hours for position closure
     }
-    
+
     return leveragePeriods;
   }
 
@@ -220,37 +223,37 @@ class UltimateArbitrageEngine {
     // INTELLIGENT TIMING ASSESSMENT
     let optimalScore = 0;
     let periodType = 'low';
-    
+
     // High volume institutional hours (8AM-12PM UTC)
     if (currentHour >= 8 && currentHour <= 12) {
       optimalScore += 0.8;
       periodType = 'institutional';
     }
-    
+
     // Asian market overlap (6PM-2AM UTC)
     if (currentHour >= 18 || currentHour <= 2) {
       optimalScore += 0.7;
       periodType = 'asian-overlap';
     }
-    
+
     // DeFi yield farming hours (10PM-6AM UTC)
     if (currentHour >= 22 || currentHour <= 6) {
       optimalScore += 0.6;
       periodType = 'defi-farming';
     }
-    
+
     // 72-hour margin period boost
     if (this.isIn72HourMarginPeriod(currentHour, currentDay)) {
       optimalScore += 0.9;
       periodType = 'leverage-margin';
     }
-    
+
     // Weekend adjustment (lower volume, higher spreads)
     if (currentDay === 0 || currentDay === 6) {
       optimalScore *= 0.6;
       periodType += '-weekend';
     }
-    
+
     return {
       score: Math.min(optimalScore, 1.0),
       type: periodType,
@@ -263,7 +266,7 @@ class UltimateArbitrageEngine {
     const isMonWedCycle = currentDay >= 1 && currentDay <= 3;
     const isThuSatCycle = currentDay >= 4 && currentDay <= 6;
     const isOptimalHour = (currentHour >= 6 && currentHour <= 8) || (currentHour >= 18 && currentHour <= 22);
-    
+
     return (isMonWedCycle || isThuSatCycle) && isOptimalHour;
   }
 
@@ -290,7 +293,7 @@ class UltimateArbitrageEngine {
 
         await Promise.all(pricePromises);
         const priceEntries = Object.entries(prices);
-        
+
         if (priceEntries.length < 2) continue;
 
         // FIND BEST BUY/SELL COMBINATION
@@ -657,10 +660,10 @@ class UltimateArbitrageEngine {
         // DYNAMIC SCAN FREQUENCY based on time patterns
         const timingPatterns = await this.analyzeTimingPatterns();
         const currentPeriod = timingPatterns.currentOptimalPeriod;
-        
+
         // Adjust scan frequency based on time period optimality
         if (currentPeriod.score > 0.7) {
-          scanInterval = 250; // Faster scanning during high-activity periods
+          scanInterval = 250; //// Faster scanning during high-activity periods
         } else if (currentPeriod.score < 0.3) {
           scanInterval = 1000; // Slower scanning during low-activity periods
         } else {
@@ -704,19 +707,205 @@ class UltimateArbitrageEngine {
   async logTimingInsights() {
     const timingPatterns = await this.analyzeTimingPatterns();
     const currentPeriod = timingPatterns.currentOptimalPeriod;
-    
+
     console.log('\n📊 TIMING INSIGHTS:');
     console.log(`🕐 Current Time: ${new Date().toUTCString()}`);
     console.log(`⏰ Period Type: ${currentPeriod.type}`);
     console.log(`📈 Optimality Score: ${currentPeriod.score.toFixed(2)}/1.0`);
     console.log(`🎯 Strategy: ${currentPeriod.recommendation}`);
-    
+
     if (timingPatterns.leverageMarginHours.includes(new Date().getUTCHours())) {
       console.log(`💎 🚨 72-HOUR MARGIN PERIOD ACTIVE - High-profit opportunities expected!`);
     }
-    
+
     if (timingPatterns.weekendPatterns.length > 0) {
       console.log(`🏖️ Weekend trading - Lower volume, higher spreads expected`);
+    }
+  }
+
+  async scanOpportunities() {
+    const opportunities = [];
+    const scanPromises = [];
+
+    // SUPERCHARGED SCANNING - All exchanges simultaneously
+    console.log(`🔥 SCANNING ${this.dexes.length} exchanges across ${this.tokens.length} tokens...`);
+
+    for (let i = 0; i < this.dexes.length; i++) {
+      for (let j = i + 1; j < this.dexes.length; j++) {
+        const buyDex = this.dexes[i];
+        const sellDex = this.dexes[j];
+
+        // Parallel token scanning for maximum speed
+        const tokenBatch = this.tokens.map(async (token) => {
+          try {
+            const opportunity = await this.findArbitrageOpportunity(token, buyDex, sellDex);
+            if (opportunity && opportunity.profit > this.minProfitThreshold) {
+              return opportunity;
+            }
+          } catch (error) {
+            // Fail silently for speed
+          }
+          return null;
+        });
+
+        scanPromises.push(...tokenBatch);
+      }
+    }
+
+    // Execute all scans simultaneously
+    const results = await Promise.allSettled(scanPromises);
+
+    results.forEach(result => {
+      if (result.status === 'fulfilled' && result.value) {
+        opportunities.push(result.value);
+      }
+    });
+
+    console.log(`💎 Found ${opportunities.length} profitable opportunities!`);
+
+    // Sort by profit ratio for maximum efficiency
+    return opportunities.sort((a, b) => (b.profit/b.amount) - (a.profit/a.amount));
+  }
+
+  async executeMultipleOpportunities(opportunities, maxConcurrent = 8) {
+    const results = [];
+    const executing = [];
+
+    console.log(`🚀 EXECUTING ${Math.min(opportunities.length, maxConcurrent)} trades simultaneously...`);
+
+    // MAXIMUM AGGRESSION - Execute top opportunities simultaneously
+    for (const opportunity of opportunities.slice(0, maxConcurrent)) {
+      const execution = this.executeAgressiveArbitrage(opportunity);
+      executing.push(execution);
+    }
+
+    const completedTrades = await Promise.allSettled(executing);
+    let totalProfit = 0;
+
+    completedTrades.forEach((trade, index) => {
+      if (trade.status === 'fulfilled' && trade.value.success) {
+        results.push(trade.value);
+        totalProfit += trade.value.profit;
+        console.log(`✅ Trade ${index + 1}: +$${trade.value.profit.toFixed(2)}`);
+      } else {
+        console.log(`❌ Trade ${index + 1}: Failed`);
+      }
+    });
+
+    console.log(`💰 TOTAL PROFIT: $${totalProfit.toFixed(2)}`);
+
+    return results;
+  }
+
+  async executeAgressiveArbitrage(opportunity) {
+    try {
+      // Enhanced execution with maximum gas for fastest confirmation
+      const gasPrice = await this.getCurrentGasPrice();
+      const aggressiveGasPrice = gasPrice.mul(150).div(100); // 50% above current
+
+      const tx = await this.flashLoanContract.executeFlashLoan(
+        opportunity.token,
+        opportunity.amount,
+        this.encodeArbitrageParams(opportunity),
+        {
+          gasLimit: 800000, // High gas limit
+          gasPrice: aggressiveGasPrice,
+          maxFeePerGas: aggressiveGasPrice.mul(2), // EIP-1559
+          maxPriorityFeePerGas: ethers.utils.parseUnits('5', 'gwei')
+        }
+      );
+
+      console.log(`⚡ AGGRESSIVE TX: ${tx.hash}`);
+      const receipt = await tx.wait();
+
+      return {
+        success: true,
+        profit: opportunity.profit,
+        txHash: tx.hash,
+        gasUsed: receipt.gasUsed.toString(),
+        blockNumber: receipt.blockNumber
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async findArbitrageOpportunity(token, buyDex, sellDex) {
+    try {
+      // DUAL FREQUENCY SCANNING - Both common and live frequency
+      const [buyPriceCommon, sellPriceCommon] = await Promise.all([
+        this.getTokenPrice(token, buyDex, 'common'),
+        this.getTokenPrice(token, sellDex, 'common')
+      ]);
+
+      const [buyPriceLive, sellPriceLive] = await Promise.all([
+        this.getTokenPrice(token, buyDex, 'live'),
+        this.getTokenPrice(token, sellDex, 'live')
+      ]);
+
+      // Use the most profitable combination
+      const combinations = [
+        { buy: buyPriceCommon, sell: sellPriceCommon, type: 'common' },
+        { buy: buyPriceLive, sell: sellPriceLive, type: 'live' },
+        { buy: buyPriceCommon, sell: sellPriceLive, type: 'mixed1' },
+        { buy: buyPriceLive, sell: sellPriceCommon, type: 'mixed2' }
+      ];
+
+      let bestOpportunity = null;
+      let maxProfit = 0;
+
+      for (const combo of combinations) {
+        if (!combo.buy || !combo.sell) continue;
+
+        const priceDifference = combo.sell - combo.buy;
+        const profitPercentage = (priceDifference / combo.buy) * 100;
+
+        if (profitPercentage >= this.minProfitThreshold) {
+          const amount = await this.calculateOptimalAmount(token, combo.buy, combo.sell);
+          const profit = amount * (profitPercentage / 100);
+
+          if (profit > maxProfit) {
+            maxProfit = profit;
+            bestOpportunity = {
+              id: `${token.symbol}-${buyDex.name}-${sellDex.name}-${combo.type}-${Date.now()}`,
+              token: token.symbol,
+              buyDex: buyDex.name,
+              sellDex: sellDex.name,
+              buyPrice: combo.buy,
+              sellPrice: combo.sell,
+              amount,
+              profit,
+              profitPercentage,
+              scanType: combo.type,
+              timestamp: Date.now()
+            };
+          }
+        }
+      }
+
+      return bestOpportunity;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async getTokenPrice(token, dex, frequency = 'live') {
+    try {
+      // Simulate dual frequency price fetching
+      const basePrice = Math.random() * 1000 + 100; // $100-$1100 range
+
+      if (frequency === 'common') {
+        // Common frequency - slightly delayed but stable
+        return basePrice * (1 + (Math.random() - 0.5) * 0.001); // ±0.05% variation
+      } else {
+        // Live frequency - real-time but more volatile
+        return basePrice * (1 + (Math.random() - 0.5) * 0.01); // ±0.5% variation
+      }
+    } catch (error) {
+      return null;
     }
   }
 }

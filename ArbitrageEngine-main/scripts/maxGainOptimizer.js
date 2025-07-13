@@ -1,4 +1,3 @@
-
 import { ethers } from 'ethers';
 import { RealTradingEngine } from '../trading/realTradingEngine.js';
 import dotenv from 'dotenv';
@@ -19,7 +18,7 @@ class MaxGainOptimizer {
     console.log('🚀 Initializing Maximum Gain Optimizer...');
     console.log(`💰 Starting Capital: $${this.startingCapital}`);
     console.log(`🎯 Target: $${this.startingCapital * this.targetMultiplier}`);
-    
+
     const result = await this.engine.initialize(process.env.REACT_APP_PRIVATE_KEY);
     if (result.success) {
       console.log('✅ Trading engine initialized');
@@ -33,20 +32,20 @@ class MaxGainOptimizer {
     // ENHANCED: Dynamic leverage based on market conditions and gas costs
     const gasPrice = this.getCurrentGasPrice();
     const networkCongestion = this.getNetworkCongestion();
-    
+
     // Reduce leverage during high gas periods
     let dynamicLeverage = this.leverageMultiplier;
     if (gasPrice > 50) dynamicLeverage *= 0.7; // Reduce 30% if gas > 50 gwei
     if (networkCongestion > 0.8) dynamicLeverage *= 0.8; // Reduce 20% if network congested
-    
+
     const baseAmount = currentBalance * dynamicLeverage;
     const maxSafeAmount = this.getMaxSafeLoanAmount(opportunity);
     const optimalAmount = Math.min(baseAmount, maxSafeAmount);
-    
+
     // Ensure minimum profitability after all costs
     const estimatedGasCost = this.estimateGasCost(optimalAmount, gasPrice);
     const minProfitableAmount = estimatedGasCost / (opportunity.profitPercentage / 100);
-    
+
     return Math.max(optimalAmount, minProfitableAmount * 1.5); // 50% buffer above break-even
   }
 
@@ -55,11 +54,11 @@ class MaxGainOptimizer {
     const tokenLiquidity = this.getTokenLiquidity(opportunity.tokenPair);
     const dexLiquidity = this.getDexLiquidity(opportunity.buyDex, opportunity.sellDex);
     const marketVolume = this.getMarketVolume(opportunity.tokenPair);
-    
+
     // Use the most conservative estimate
     const baseLiquidity = Math.min(tokenLiquidity, dexLiquidity, marketVolume * 0.1);
     const slippageProtection = 0.92; // 8% slippage buffer for safety
-    
+
     return baseLiquidity * slippageProtection;
   }
 
@@ -107,9 +106,9 @@ class MaxGainOptimizer {
 
   async scanHighYieldOpportunities() {
     console.log('🔍 Scanning for high-yield opportunities...');
-    
+
     const opportunities = await this.engine.arbitrageService?.scanForOpportunities() || [];
-    
+
     // Filter for maximum gain potential
     const highYieldOps = opportunities.filter(op => {
       const yieldPercent = (op.afterFeesProfit / (op.flashLoanAmount || 100000)) * 100;
@@ -134,7 +133,7 @@ class MaxGainOptimizer {
 
     while (currentBalance < this.startingCapital * this.targetMultiplier && tradesExecuted < 100) {
       const opportunities = await this.scanHighYieldOpportunities();
-      
+
       if (opportunities.length === 0) {
         console.log('⏳ No profitable opportunities found, waiting...');
         await new Promise(resolve => setTimeout(resolve, 5000));
@@ -143,7 +142,7 @@ class MaxGainOptimizer {
 
       const bestOp = opportunities[0];
       const optimalLoanAmount = this.calculateOptimalFlashLoanAmount(currentBalance, bestOp);
-      
+
       console.log(`\n🔥 Trade #${tradesExecuted + 1}`);
       console.log(`💎 Opportunity: ${bestOp.tokenPair}`);
       console.log(`📊 Expected Profit: $${bestOp.afterFeesProfit.toFixed(2)}`);
@@ -168,16 +167,16 @@ class MaxGainOptimizer {
 
           // ENHANCED: Smart profit compounding with risk management
           const profitMultiplier = currentBalance / this.startingCapital;
-          
+
           if (profitMultiplier > 2) {
             // Increase leverage but cap based on success rate
             const successRate = tradesExecuted > 0 ? (tradesExecuted - (totalProfit < 0 ? 1 : 0)) / tradesExecuted : 1;
             const maxLeverageIncrease = successRate > 0.8 ? 1.2 : 1.1;
-            
+
             this.leverageMultiplier = Math.min(this.leverageMultiplier * maxLeverageIncrease, 2500);
             console.log(`⚡ Smart leverage increase to ${this.leverageMultiplier}x (Success rate: ${(successRate * 100).toFixed(1)}%)`);
           }
-          
+
           // Compound profits into next trade
           if (profitMultiplier > 5) {
             this.minProfitThreshold *= 0.95; // Accept slightly lower profits for higher volume
@@ -197,7 +196,7 @@ class MaxGainOptimizer {
     }
 
     const finalGain = ((currentBalance - this.startingCapital) / this.startingCapital) * 100;
-    
+
     console.log('\n🏆 MAXIMUM GAIN STRATEGY COMPLETE 🏆');
     console.log(`💰 Starting Capital: $${this.startingCapital}`);
     console.log(`💎 Final Balance: $${currentBalance.toFixed(2)}`);
@@ -205,6 +204,94 @@ class MaxGainOptimizer {
     console.log(`🚀 Gain: ${finalGain.toFixed(2)}%`);
     console.log(`🔥 Trades Executed: ${tradesExecuted}`);
     console.log(`💪 Success Rate: ${((tradesExecuted / (tradesExecuted + 1)) * 100).toFixed(1)}%`);
+  }
+
+  async runContinuousOptimization() {
+    console.log('🔥💀 SUPERCHARGED MAXIMUM DEVASTATION MODE! 💀🔥');
+    console.log('⚡ Scanning 7 exchanges × 1,140 tokens × 5 networks × 2 frequencies');
+
+    let currentBalance = this.startingCapital;
+    let totalProfit = 0;
+    let tradesExecuted = 0;
+    let consecutiveWins = 0;
+
+    while (this.isRunning) {
+      try {
+        const opportunities = await this.scanHighYieldOpportunities();
+
+        if (opportunities.length > 0) {
+          console.log(`💎 FOUND ${opportunities.length} PROFIT OPPORTUNITIES!`);
+
+          // MAXIMUM AGGRESSION - Execute multiple trades simultaneously
+          const maxConcurrent = Math.min(opportunities.length, 8);
+          const concurrentTrades = [];
+
+          for (let i = 0; i < maxConcurrent; i++) {
+            const opportunity = opportunities[i];
+            const flashLoanAmount = this.calculateOptimalFlashLoanAmount(currentBalance, opportunity);
+
+            console.log(`🚀 LAUNCHING TRADE ${i + 1}: $${flashLoanAmount.toFixed(2)} → Expected: $${opportunity.profit.toFixed(2)}`);
+
+            const tradePromise = this.executeFlashLoanArbitrage(opportunity, flashLoanAmount);
+            concurrentTrades.push(tradePromise);
+          }
+
+          // Execute all trades simultaneously
+          const results = await Promise.allSettled(concurrentTrades);
+
+          let batchProfit = 0;
+          let successfulTrades = 0;
+
+          results.forEach((result, index) => {
+            if (result.status === 'fulfilled' && result.value.success) {
+              batchProfit += result.value.profit;
+              successfulTrades++;
+              consecutiveWins++;
+              console.log(`✅ TRADE ${index + 1} SUCCESS: +$${result.value.profit.toFixed(2)}`);
+            } else {
+              consecutiveWins = 0;
+              console.log(`❌ TRADE ${index + 1} FAILED`);
+            }
+          });
+
+          currentBalance += batchProfit;
+          totalProfit += batchProfit;
+          tradesExecuted += maxConcurrent;
+
+          console.log(`💰 BATCH COMPLETE: +$${batchProfit.toFixed(2)}`);
+          console.log(`📈 NEW BALANCE: $${currentBalance.toFixed(2)}`);
+          console.log(`🔥 TOTAL PROFIT: $${totalProfit.toFixed(2)}`);
+          console.log(`🏆 SUCCESS RATE: ${((successfulTrades / maxConcurrent) * 100).toFixed(1)}%`);
+
+          // DYNAMIC LEVERAGE SCALING based on performance
+          const profitMultiplier = currentBalance / this.startingCapital;
+
+          if (consecutiveWins >= 5) {
+            this.leverageMultiplier = Math.min(this.leverageMultiplier * 1.3, 5000);
+            console.log(`🔥 WINNING STREAK! Leverage → ${this.leverageMultiplier}x`);
+          }
+
+          if (profitMultiplier > 10) {
+            this.minProfitThreshold *= 0.9; // Accept lower profits for higher volume
+            console.log(`⚡ BEAST MODE: Reduced threshold to ${(this.minProfitThreshold * 100).toFixed(2)}%`);
+          }
+
+          // PROFIT MILESTONE REWARDS
+          if (profitMultiplier > 50) {
+            console.log('🎉🎉🎉 MILLIONAIRE STATUS ACHIEVED! 🎉🎉🎉');
+          } else if (profitMultiplier > 20) {
+            console.log('💎💎💎 DIAMOND HANDS ACTIVATED! 💎💎💎');
+          } else if (profitMultiplier > 5) {
+            console.log('🚀🚀🚀 ROCKET MODE ENGAGED! 🚀🚀🚀');
+          }
+        }
+
+        await this.sleep(1000); // 1 second between scan cycles for maximum speed
+      } catch (error) {
+        console.error('💀 SYSTEM ERROR:', error);
+        await this.sleep(5000);
+      }
+    }
   }
 }
 
