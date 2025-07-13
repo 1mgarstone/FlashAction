@@ -49,10 +49,7 @@ if [ -f "app/build/outputs/apk/release/app-release.apk" ]; then
     
     # Copy APK to root directory
     echo "📱 Copying APK to root directory..."
-    cp app/build/outputs/apk/release/app-release.apk "$PROJECT_ROOT/$APK_NAME"
-    
-    # Make executable
-    chmod +x "$PROJECT_ROOT/$APK_NAME"
+    cp "app/build/outputs/apk/release/app-release.apk" "$PROJECT_ROOT/$APK_NAME"
     
     echo "📱 APK copied to: $PROJECT_ROOT/$APK_NAME"
     echo ""
