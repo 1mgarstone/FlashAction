@@ -28,8 +28,8 @@ echo "🏗️ Prebuild Android project..."
 npx expo prebuild --platform android --clean
 
 # Build APK using EAS Build
-echo "🚀 Building APK with EAS..."
-npx eas build --platform android --profile development --local
+echo "🚀 Building standalone APK with EAS..."
+npx eas build --platform android --profile standalone --local
 
 # Copy APK to accessible location
 echo "📂 Copying APK to project root..."

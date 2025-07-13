@@ -17,6 +17,11 @@
       "android": {
         "buildType": "aab"
       }
+    },
+    "standalone": {
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {
