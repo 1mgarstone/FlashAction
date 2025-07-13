@@ -61,9 +61,10 @@ class UltimateArbitrageEngine {
   }
 
   async findBestOpportunity(amount) {
-    // INTELLIGENT TOKEN CATEGORIZATION SYSTEM with TIME-BASED OPTIMIZATION
+    // INTELLIGENT TOKEN CATEGORIZATION SYSTEM with TIME-BASED OPTIMIZATION + MEV INTEGRATION
     const tokenCategories = await this.categorizeTokensByArbitrageFrequency();
     const timingPatterns = await this.analyzeTimingPatterns();
+    const mevOpportunities = await this.detectMEVOpportunities(amount);
 
     // ADJUST STRATEGY BASED ON CURRENT TIME PERIOD
     const currentPeriod = timingPatterns.currentOptimalPeriod;
@@ -278,6 +279,163 @@ class UltimateArbitrageEngine {
     const isOptimalHour = (currentHour >= 6 && currentHour <= 8) || (currentHour >= 18 && currentHour <= 22);
 
     return (isMonWedCycle || isThuSatCycle) && isOptimalHour;
+  }
+
+  async detectMEVOpportunities(amount) {
+    // MEV OPPORTUNITY DETECTION - Work WITH MEV rather than against it
+    const mevStrategies = {
+      frontrunning: await this.detectFrontrunningOpportunities(amount),
+      sandwich: await this.detectSandwichOpportunities(amount),
+      backrunning: await this.detectBackrunningOpportunities(amount),
+      liquidation: await this.detectLiquidationOpportunities(amount)
+    };
+
+    console.log(`🎯 MEV SCAN: Found ${Object.values(mevStrategies).flat().length} MEV opportunities`);
+    return mevStrategies;
+  }
+
+  async detectFrontrunningOpportunities(amount) {
+    // LEGAL FRONTRUNNING: Detect large pending transactions and position ahead
+    const pendingTxs = await this.scanMempool();
+    const opportunities = [];
+
+    for (const tx of pendingTxs) {
+      if (tx.value > amount * 0.1 && tx.gasPrice < 50) { // Large tx with low gas
+        const frontrunOpportunity = {
+          type: 'frontrun',
+          targetTx: tx.hash,
+          estimatedProfit: this.calculateFrontrunProfit(tx, amount),
+          confidence: 0.7,
+          timeWindow: 30, // 30 seconds
+          strategy: 'price-impact-arbitrage'
+        };
+
+        if (frontrunOpportunity.estimatedProfit > this.profitThreshold * amount) {
+          opportunities.push(frontrunOpportunity);
+        }
+      }
+    }
+
+    return opportunities;
+  }
+
+  async detectSandwichOpportunities(amount) {
+    // SANDWICH DETECTION: Identify profitable sandwich opportunities
+    const largeTrades = await this.detectLargeTrades();
+    const opportunities = [];
+
+    for (const trade of largeTrades) {
+      const priceImpact = this.calculatePriceImpact(trade);
+      
+      if (priceImpact > 0.005) { // 0.5% price impact
+        const sandwichOpportunity = {
+          type: 'sandwich',
+          targetTrade: trade,
+          frontAmount: amount * 0.3,
+          backAmount: amount * 0.3,
+          estimatedProfit: priceImpact * amount * 0.8, // 80% efficiency
+          confidence: 0.6,
+          timeWindow: 60
+        };
+
+        opportunities.push(sandwichOpportunity);
+      }
+    }
+
+    return opportunities;
+  }
+
+  async detectBackrunningOpportunities(amount) {
+    // BACKRUNNING: Clean up after MEV opportunities
+    const recentTxs = await this.getRecentTransactions();
+    const opportunities = [];
+
+    for (const tx of recentTxs) {
+      if (tx.mevActivity && !tx.backrun) {
+        const backrunOpportunity = {
+          type: 'backrun',
+          followTx: tx.hash,
+          strategy: 'arbitrage-cleanup',
+          estimatedProfit: tx.residualValue * 0.5,
+          confidence: 0.8,
+          timeWindow: 15
+        };
+
+        opportunities.push(backrunOpportunity);
+      }
+    }
+
+    return opportunities;
+  }
+
+  async detectLiquidationOpportunities(amount) {
+    // LIQUIDATION MEV: Profit from liquidation events
+    const unhealthyPositions = await this.scanUnhealthyPositions();
+    const opportunities = [];
+
+    for (const position of unhealthyPositions) {
+      if (position.liquidationValue > amount * 0.05) {
+        const liquidationOpportunity = {
+          type: 'liquidation',
+          position: position.id,
+          protocol: position.protocol,
+          estimatedProfit: position.liquidationBonus,
+          confidence: 0.9,
+          timeWindow: 120,
+          gasRequired: position.gasEstimate
+        };
+
+        opportunities.push(liquidationOpportunity);
+      }
+    }
+
+    return opportunities;
+  }
+
+  calculateFrontrunProfit(targetTx, amount) {
+    // Calculate potential profit from frontrunnning a transaction
+    const priceImpact = targetTx.value / 1000000; // Simplified calculation
+    return Math.min(priceImpact * amount * 0.3, amount * 0.05); // Max 5% of amount
+  }
+
+  calculatePriceImpact(trade) {
+    // Calculate price impact of a large trade
+    const liquidityRatio = trade.amount / trade.poolLiquidity;
+    return Math.min(liquidityRatio * 0.01, 0.1); // Max 10% price impact
+  }
+
+  async scanMempool() {
+    // Simulate mempool scanning for pending transactions
+    return [
+      {
+        hash: '0x' + Math.random().toString(16).substr(2, 64),
+        value: Math.random() * 1000000 + 100000,
+        gasPrice: Math.random() * 100 + 20,
+        timestamp: Date.now()
+      }
+    ];
+  }
+
+  async detectLargeTrades() {
+    // Simulate detection of large trades
+    return [
+      {
+        amount: Math.random() * 500000 + 100000,
+        poolLiquidity: Math.random() * 10000000 + 1000000,
+        token: 'WETH',
+        dex: 'Uniswap'
+      }
+    ];
+  }
+
+  async getRecentTransactions() {
+    // Get recent transactions for backrunning analysis
+    return [];
+  }
+
+  async scanUnhealthyPositions() {
+    // Scan for positions close to liquidation
+    return [];
   }
 
   async scanTokenCategory(tokens, amount) {
