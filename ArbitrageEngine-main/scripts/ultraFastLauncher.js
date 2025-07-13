@@ -1,65 +1,57 @@
 
-import { HighPerformanceArbitrageEngine } from '../trading/highPerformanceEngine.js';
-import { performance } from 'perf_hooks';
+#!/usr/bin/env node
 
-console.log('🚀 ULTRA-FAST ARBITRAGE LAUNCHER');
-console.log('================================');
+const { spawn } = require('child_process');
+const path = require('path');
 
-// SYSTEM OPTIMIZATION SETUP
-console.log('🔧 Optimizing system for maximum performance...');
+console.log('🚀 ULTRA-FAST LAUNCHER - ALLOCATING MAXIMUM RESOURCES');
+console.log('⚡ RAM: 6GB allocated');
+console.log('🔥 CPU: Maximum performance mode');
 
-// Increase memory limits
-if (process.argv.includes('--max-old-space-size=8192')) {
-  console.log('✅ Memory limit increased to 8GB');
-} else {
-  console.log('⚠️ For maximum performance, restart with: node --max-old-space-size=8192 scripts/ultraFastLauncher.js');
-}
-
-// Enable experimental features for performance
-console.log('⚡ Enabling performance optimizations...');
-
-async function launchUltraFastTrading() {
-  console.log('\n🎯 LAUNCHING ULTRA-FAST TRADING ENGINE...\n');
-  
-  const engine = new HighPerformanceArbitrageEngine();
-  
-  // Performance test
-  console.log('🧪 Running performance test...');
-  const testStart = performance.now();
-  
-  const testResult = await engine.ultraFastSimulation(1000000, 50000);
-  
-  const testEnd = performance.now();
-  const testTime = testEnd - testStart;
-  
-  console.log(`📊 Performance Test Results:`);
-  console.log(`  ⚡ Simulation Time: ${testTime.toFixed(3)}ms`);
-  console.log(`  🎯 Ultra-Fast Status: ${testResult.ultraFast ? 'ACHIEVED' : 'NEEDS OPTIMIZATION'}`);
-  console.log(`  💰 Test Profit: $${testResult.netProfit.toFixed(2)}`);
-  
-  if (testTime < 1.0) {
-    console.log('✅ PERFORMANCE TARGET ACHIEVED - LAUNCHING LIVE TRADING!');
-    
-    // Start live trading with $100 initial balance
-    await engine.startUltraFastAutoTrading(100);
-    
-  } else {
-    console.log('⚠️ Performance needs optimization. Current speed:', testTime.toFixed(3), 'ms');
-    console.log('🔧 Run with more RAM allocation or higher CPU priority for better performance.');
+// Set process priority to high
+process.nextTick(() => {
+  try {
+    process.setpriority(process.pid, -10); // High priority
+  } catch (e) {
+    console.log('⚠️ Could not set high priority');
   }
-}
-
-// Launch the ultra-fast trading system
-launchUltraFastTrading().catch(error => {
-  console.error('💥 Launch failed:', error);
-  process.exit(1);
 });
 
-// Performance monitoring
-setInterval(() => {
-  const memUsage = process.memoryUsage();
-  console.log(`\n📊 SYSTEM PERFORMANCE:`);
-  console.log(`  🧠 RAM Usage: ${(memUsage.heapUsed / 1024 / 1024).toFixed(1)}MB`);
-  console.log(`  💾 Total Allocated: ${(memUsage.heapTotal / 1024 / 1024).toFixed(1)}MB`);
-  console.log(`  🔄 External Memory: ${(memUsage.external / 1024 / 1024).toFixed(1)}MB`);
-}, 60000); // Every minute
+// Launch with optimized Node.js flags
+const nodeArgs = [
+  '--max-old-space-size=6144',    // 6GB RAM
+  '--optimize-for-size',
+  '--max-semi-space-size=128',
+  '--initial-heap-size=1024',
+  '--max-new-space-size=128',
+  '--turbo-fast-api-calls',
+  '--turbo-inline-api-calls',
+  path.join(__dirname, '..', 'trading', 'ultimateArbitrageEngine.js')
+];
+
+console.log('🎯 Starting NITROUS MODE with 2000x leverage...');
+
+const child = spawn('node', nodeArgs, {
+  stdio: 'inherit',
+  env: {
+    ...process.env,
+    NODE_ENV: 'production',
+    UV_THREADPOOL_SIZE: 16,
+    NODE_OPTIONS: '--max-old-space-size=6144'
+  }
+});
+
+child.on('exit', (code) => {
+  if (code === 0) {
+    console.log('✅ Trading session completed successfully');
+  } else {
+    console.log(`❌ Process exited with code ${code}`);
+  }
+});
+
+// Handle graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\n🛑 Shutting down gracefully...');
+  child.kill('SIGTERM');
+  process.exit(0);
+});
