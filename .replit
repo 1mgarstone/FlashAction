@@ -128,12 +128,4 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd ArbitrageEngine-main"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm install"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node scripts/startBot.js"
+args = "cd ArbitrageEngine-main && node scripts/startBot.js"
