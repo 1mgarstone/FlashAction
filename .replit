@@ -237,3 +237,16 @@ args = "});"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "\""
+
+[[workflows.workflow]]
+name = "🚀 Ultra-Fast Trading Mode"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node --max-old-space-size=8192 --optimize-for-size scripts/ultraFastLauncher.js"
