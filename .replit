@@ -1,6 +1,6 @@
-
 run = "cd ArbitrageEngine-main && npm install && npm run dev"
-modules = ["nodejs-20"]
+modules = ["nodejs-20", "web", "postgresql-16"]
+hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist", "attached_assets"]
 
 [packager]
 language = "nodejs-20"
@@ -11,9 +11,10 @@ packageSearch = true
 enabledForHosting = true
 
 [nix]
-channel = "stable-23_11"
+channel = "stable-24_05"
 
 [deployment]
+deploymentTarget = "autoscale"
 build = ["sh", "-c", "cd ArbitrageEngine-main && npm install && npm run build"]
 run = ["sh", "-c", "cd ArbitrageEngine-main && npm start"]
 
@@ -21,163 +22,110 @@ run = ["sh", "-c", "cd ArbitrageEngine-main && npm start"]
 NODE_ENV = "production"
 PORT = "5000"
 
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 5001
+externalPort = 5001
+
 [workflows]
-runButton = "Start App"
+runButton = "Start Application"
 
 [[workflows.workflow]]
 name = "Start Application"
-author = 44850244
+author = "agent"
 mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd ArbitrageEngine-main && npm install && npm run dev"
-
-[[workflows.workflow]]
-name = "Deploy Maximum Gain Bot"
-author = 44850244
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd ArbitrageEngine-main"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "chmod +x full_setup.sh"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "./full_setup.sh"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm install"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run build"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run maxgain"
-
-[[workflows.workflow]]
-name = "System Audit"
-author = 44850244
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd ArbitrageEngine-main"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node scripts/auditAndDebug.js"
-
-[[workflows.workflow]]
-name = "Fix & Deploy"
-author = 44850244
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd ArbitrageEngine-main"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm install"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node scripts/fixSystem.js"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run setup"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run build"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm start"
-
-[[workflows.workflow]]
-name = "Start Flash Loan System"
-author = 44850244
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd ArbitrageEngine-main"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm install"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
+waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Ultimate Flash Loan Bot"
-author = 44850244
+author = "agent"
 mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main && npm install"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd ArbitrageEngine-main && node scripts/startBot.js"
 
 [[workflows.workflow]]
+name = "Deploy Production System"
+author = "agent"
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main && npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main && chmod +x full_setup.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main && ./full_setup.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main && npm run build"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main && npm start"
+
+[[workflows.workflow]]
+name = "System Health Check"
+author = "agent"
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main && node scripts/healthCheck.js"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd ArbitrageEngine-main && node scripts/auditAndDebug.js"
+
+[[workflows.workflow]]
 name = "Agent Platform"
-author = 44850244
+author = "agent"
 mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd agent && npm install && node agent.js"
+args = "cd agent && npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd agent && node agent.js"
 
 [[workflows.workflow]]
-name = "Mobile Development"
-author = 44850244
+name = "Multi-Chain Bot"
+author = "agent"
 mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "chmod +x scripts/setup-mobile.sh"
+args = "cd ArbitrageEngine-main && npm install"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "./scripts/setup-mobile.sh"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm start"
+args = "cd ArbitrageEngine-main && node scripts/ultimateBot.js"
 
 [[workflows.workflow]]
-name = "Test Dashboard"
-author = 44850244
+name = "Test Environment"
+author = "agent"
 mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node simple-server.js"
-
-[[workflows.workflow]]
-name = "Start App"
-author = 44850244
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm start"
-
-[[ports]]
-localPort = 5000
-externalPort = 9000
-
-[[ports]]
-localPort = 8080
-externalPort = 5000
+waitForPort = 8080
