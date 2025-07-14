@@ -1,9 +1,10 @@
-
 const express = require('express');
-const path = require('path');
-const crypto = require('crypto');
+const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+app.use(cors());
+app.use(express.json());
 
 // Generate working environment variables immediately
 const testPrivateKey = '0x' + crypto.randomBytes(32).toString('hex');
@@ -137,7 +138,7 @@ app.get('/', (req, res) => {
                 tradingActive = true;
                 addToLog('🚀 ARBITRAGE ENGINE STARTED!');
                 addToLog('⚡ Scanning for flash loan opportunities...');
-                
+
                 setInterval(() => {
                     if (tradingActive) {
                         const profit = (Math.random() * 500 + 50).toFixed(2);
