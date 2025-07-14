@@ -349,3 +349,40 @@ args = "echo \"📋 Next: Test current step\""
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node step-tracker.js test"
+
+[[workflows.workflow]]
+name = "Complete APK Build"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🔨 Building complete React Native APK with full arbitrage engine...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd android"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x gradlew"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./gradlew clean"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./gradlew assembleRelease"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"✅ Complete APK built with full system - should be 80-150MB+\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "ls -la app/build/outputs/apk/release/"
