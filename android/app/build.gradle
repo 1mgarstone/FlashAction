@@ -52,4 +52,14 @@ dependencies {
     implementation "com.facebook.react:react-android"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
     implementation 'org.webkit:android-jsc:+'
+    
+    // Trading app dependencies
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
+    // Vector icons support
+    implementation project(':react-native-vector-icons')
+    implementation project(':react-native-svg')
+    implementation project(':react-native-gesture-handler')
 }

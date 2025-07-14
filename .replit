@@ -456,3 +456,20 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node simple-server.js"
+
+[[workflows.workflow]]
+name = "Complete APK Build - Fixed"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x scripts/build-complete-apk.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./scripts/build-complete-apk.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"✅ Complete APK with all 3 critical elements integrated!\""
