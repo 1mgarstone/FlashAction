@@ -386,3 +386,64 @@ args = "echo \"✅ Complete APK built with full system - should be 80-150MB+\""
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "ls -la app/build/outputs/apk/release/"
+
+[[workflows.workflow]]
+name = "Complete APK Build - Full Size"
+author = 44850244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🔨 Building COMPLETE React Native APK with ALL components...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install --legacy-peer-deps"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"📦 Installing all native dependencies...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install react-native-vector-icons react-native-svg react-native-gesture-handler"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🏗️ Generating complete Android bundle...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npx expo prebuild --platform android --clean"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"📱 Building full-size APK with all features...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd android"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x gradlew"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./gradlew clean"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./gradlew assembleRelease"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"✅ Complete APK built - checking size...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "ls -lh app/build/outputs/apk/release/app-release.apk"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🎯 Should be 40-50MB+ with full system integrated\""
