@@ -2,6 +2,101 @@ const { ethers } = require('ethers');
 
 class UltimateArbitrageEngine {
   constructor() {
+    this.aiAssistant = null;
+    this.aiMode = false;
+    this.aiDecisionHistory = [];
+  }
+
+  async initializeAI() {
+    try {
+      const AITradingAssistant = require('../services/aiService.js');
+      this.aiAssistant = new AITradingAssistant();
+      console.log('🤖 AI Assistant initialized for Ultimate Engine');
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to initialize AI:', error.message);
+      return false;
+    }
+  }
+
+  async startAIAutonomousMode(params = {}) {
+    if (!this.aiAssistant) {
+      await this.initializeAI();
+    }
+
+    this.aiMode = true;
+    console.log('🚀 Starting AI Autonomous Trading Mode...');
+
+    const defaultParams = {
+      maxAmount: 10000,
+      riskLevel: 'moderate',
+      profitTarget: 0.02,
+      stopLoss: 0.01,
+      ...params
+    };
+
+    // Start the AI trading loop
+    this.aiTradingLoop(defaultParams);
+
+    return {
+      status: 'ai_autonomous_started',
+      params: defaultParams,
+      timestamp: Date.now()
+    };
+  }
+
+  async aiTradingLoop(params) {
+    while (this.aiMode) {
+      try {
+        // Get market data
+        const marketData = await this.getMarketData();
+        
+        // AI analysis
+        const analysis = await this.aiAssistant.analyzeMarketConditions(marketData);
+        
+        if (analysis && analysis.analysis.includes('EXECUTE')) {
+          console.log('🤖 AI recommends execution...');
+          await this.executeAIRecommendedTrade(analysis);
+        }
+
+        // AI decision logging
+        this.aiDecisionHistory.push({
+          timestamp: Date.now(),
+          analysis,
+          action: analysis ? 'analyzed' : 'skipped',
+          marketData: marketData
+        });
+
+        // Keep only last 100 decisions
+        if (this.aiDecisionHistory.length > 100) {
+          this.aiDecisionHistory = this.aiDecisionHistory.slice(-100);
+        }
+
+        // Wait before next iteration
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+      } catch (error) {
+        console.error('❌ AI Trading Loop Error:', error);
+        await new Promise(resolve => setTimeout(resolve, 10000));
+      }
+    }
+  }
+
+  async executeAIRecommendedTrade(analysis) {
+    console.log('🎯 Executing AI-recommended trade...');
+    // Integration with existing trading logic
+    return await this.executeArbitrage({
+      source: 'ai_recommendation',
+      analysis: analysis,
+      timestamp: Date.now()
+    });
+  }
+
+  stopAIMode() {
+    this.aiMode = false;
+    console.log('🛑 AI Autonomous Mode stopped');
+  }
+  constructor() {
     this.profitThreshold = 0.25; // 0.25% minimum - More opportunities
     this.leverageMultiplier = 1400; // 1400x LULLABYTE SWEET SPOT
     this.isActive = false;

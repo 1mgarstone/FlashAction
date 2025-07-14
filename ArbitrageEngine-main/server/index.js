@@ -1,11 +1,57 @@
 
 const express = require('express');
+const AITradingAssistant = require('../services/aiService.js');
 const cors = require('cors');
 const { ethers } = require('ethers');
 const path = require('path');
 require('dotenv').config();
 
 const app = express();
+
+// Initialize AI Trading Assistant
+const aiAssistant = new AITradingAssistant();
+
+// AI Assistant Routes
+app.post('/api/ai/analyze', async (req, res) => {
+  try {
+    const analysis = await aiAssistant.analyzeMarketConditions(req.body.marketData);
+    res.json({ success: true, analysis });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/ai/command', async (req, res) => {
+  try {
+    const result = await aiAssistant.executeAICommand(req.body.command, req.body.context);
+    res.json({ success: true, result });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/ai/strategy', async (req, res) => {
+  try {
+    const strategy = await aiAssistant.generateTradingStrategy(req.body.marketConditions);
+    res.json({ success: true, strategy });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/ai/status', (req, res) => {
+  res.json({ 
+    aiEnabled: aiAssistant.isEnabled,
+    context: aiAssistant.context,
+    capabilities: [
+      'Market Analysis',
+      'Strategy Generation', 
+      'Command Execution',
+      'Risk Assessment',
+      'Autonomous Trading'
+    ]
+  });
+});
 const PORT = process.env.PORT || 5000;
 
 // Middleware
