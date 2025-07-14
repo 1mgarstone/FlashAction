@@ -130,21 +130,105 @@ export class ContractDeployer {
   }
 }
 
-// Deployment script
-export async function deployContract() {
-  const privateKey = process.env.PRIVATE_KEY || process.env.VITE_PRIVATE_KEY;
-  const rpcUrl = process.env.ETHEREUM_RPC_URL || process.env.VITE_ETHEREUM_RPC_URL;
+// Multi-network deployment configuration
+const NETWORKS = {
+  ethereum: {
+    name: 'Ethereum Mainnet',
+    rpc: process.env.ETHEREUM_RPC_URL || process.env.VITE_ETHEREUM_RPC_URL,
+    chainId: 1,
+    allocation: '40%', // $2000 allocation
+    gasPrice: 'auto'
+  },
+  polygon: {
+    name: 'Polygon',
+    rpc: process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
+    chainId: 137,
+    allocation: '25%', // $1250 allocation
+    gasPrice: '30000000000' // 30 gwei
+  },
+  bsc: {
+    name: 'Binance Smart Chain',
+    rpc: process.env.BSC_RPC_URL || 'https://bsc-dataseed.binance.org',
+    chainId: 56,
+    allocation: '20%', // $1000 allocation
+    gasPrice: '5000000000' // 5 gwei
+  },
+  arbitrum: {
+    name: 'Arbitrum One',
+    rpc: process.env.ARBITRUM_RPC_URL || 'https://arb1.arbitrum.io/rpc',
+    chainId: 42161,
+    allocation: '10%', // $500 allocation
+    gasPrice: 'auto'
+  },
+  optimism: {
+    name: 'Optimism',
+    rpc: process.env.OPTIMISM_RPC_URL || 'https://mainnet.optimism.io',
+    chainId: 10,
+    allocation: '5%', // $250 allocation
+    gasPrice: 'auto'
+  }
+};
 
+// Multi-network deployment script
+export async function deployToAllNetworks() {
+  const privateKey = process.env.PRIVATE_KEY || process.env.VITE_PRIVATE_KEY;
+  
   if (!privateKey) {
     throw new Error('PRIVATE_KEY environment variable is required');
   }
 
-  if (!rpcUrl) {
-    throw new Error('ETHEREUM_RPC_URL environment variable is required');
+  const deployments = {};
+  
+  console.log('🚀 Starting multi-network deployment...');
+  console.log('💰 Total allocation: $5000 across 5 networks');
+  
+  for (const [networkName, config] of Object.entries(NETWORKS)) {
+    try {
+      console.log(`\n📡 Deploying to ${config.name} (${config.allocation})...`);
+      
+      // Create provider and signer for this network
+      const provider = new ethers.providers.JsonRpcProvider(config.rpc);
+      const signer = new ethers.Wallet(privateKey, provider);
+      
+      // Deploy contract
+      const deployer = new ContractDeployer(signer);
+      const deployment = await deployer.deployFlashLoanArbitrageContract();
+      
+      deployments[networkName] = {
+        ...deployment,
+        network: config.name,
+        chainId: config.chainId,
+        allocation: config.allocation
+      };
+      
+      console.log(`✅ ${config.name} deployment successful!`);
+      console.log(`📍 Address: ${deployment.address}`);
+      console.log(`💸 Cost: ${deployment.deploymentCost} ETH`);
+      
+    } catch (error) {
+      console.error(`❌ ${config.name} deployment failed:`, error.message);
+      deployments[networkName] = { error: error.message };
+    }
+  }
+  
+  return deployments;
+}
+
+// Single network deployment (original function)
+export async function deployContract(networkName = 'ethereum') {
+  const privateKey = process.env.PRIVATE_KEY || process.env.VITE_PRIVATE_KEY;
+  const network = NETWORKS[networkName];
+  
+  if (!network) {
+    throw new Error(`Unsupported network: ${networkName}`);
+  }
+  
+  if (!privateKey) {
+    throw new Error('PRIVATE_KEY environment variable is required');
   }
 
   // Create provider and signer
-  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  const provider = new ethers.providers.JsonRpcProvider(network.rpc);
   const signer = new ethers.Wallet(privateKey, provider);
 
   // Deploy contract
