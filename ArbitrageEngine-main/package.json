@@ -15,9 +15,12 @@
     "multi-chain": "node scripts/multiChainBot.js",
     "monitor": "node scripts/monitor.js",
     "enhanced": "node core/systemLauncher.js",
+    "enhanced-manager": "node core/enhancedSystemManager.js",
     "integrity-check": "node core/projectIntegrityCheck.js",
     "test-system": "node core/systemTest.js",
-    "deploy-enhanced": "node scripts/deployEnhancedSystem.js"
+    "deploy-enhanced": "node scripts/deployEnhancedSystem.js",
+    "deploy-complete": "node scripts/deployCompleteSystem.js",
+    "full-deploy": "npm run deploy-complete && npm run enhanced-manager"
   },
   "dependencies": {
     "ethers": "^5.7.2",
