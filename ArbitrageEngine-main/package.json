@@ -13,7 +13,11 @@
     "deploy": "node contracts/deploy.js",
     "ultimate": "node scripts/ultimateBot.js",
     "multi-chain": "node scripts/multiChainBot.js",
-    "monitor": "node scripts/monitor.js"
+    "monitor": "node scripts/monitor.js",
+    "enhanced": "node core/systemLauncher.js",
+    "integrity-check": "node core/projectIntegrityCheck.js",
+    "test-system": "node core/systemTest.js",
+    "deploy-enhanced": "node scripts/deployEnhancedSystem.js"
   },
   "dependencies": {
     "ethers": "^5.7.2",
